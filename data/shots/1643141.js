@@ -1,0 +1,6 @@
+export const SHOTS_1643141 = [
+  { LOC_X: 230, LOC_Y: 30, SHOT_MADE_FLAG: 0, SHOT_TYPE: "3PT Field Goal" },
+  { LOC_X: -214, LOC_Y: 126, SHOT_MADE_FLAG: 0, SHOT_TYPE: "3PT Field Goal" },
+  { LOC_X: -223, LOC_Y: 55, SHOT_MADE_FLAG: 0, SHOT_TYPE: "3PT Field Goal" },
+  { LOC_X: -147, LOC_Y: 204, SHOT_MADE_FLAG: 0, SHOT_TYPE: "3PT Field Goal" },
+];

@@ -1,0 +1,17 @@
+export const SHOTS_1642951 = [
+  { LOC_X: 89, LOC_Y: 248, SHOT_MADE_FLAG: 0, SHOT_TYPE: "3PT Field Goal" },
+  { LOC_X: -86, LOC_Y: 301, SHOT_MADE_FLAG: 1, SHOT_TYPE: "3PT Field Goal" },
+  { LOC_X: 134, LOC_Y: 235, SHOT_MADE_FLAG: 1, SHOT_TYPE: "3PT Field Goal" },
+  { LOC_X: -228, LOC_Y: 86, SHOT_MADE_FLAG: 0, SHOT_TYPE: "3PT Field Goal" },
+  { LOC_X: -229, LOC_Y: 21, SHOT_MADE_FLAG: 0, SHOT_TYPE: "3PT Field Goal" },
+  { LOC_X: -130, LOC_Y: 221, SHOT_MADE_FLAG: 0, SHOT_TYPE: "3PT Field Goal" },
+  { LOC_X: -4, LOC_Y: 101, SHOT_MADE_FLAG: 1, SHOT_TYPE: "2PT Field Goal" },
+  { LOC_X: -227, LOC_Y: 5, SHOT_MADE_FLAG: 0, SHOT_TYPE: "3PT Field Goal" },
+  { LOC_X: 43, LOC_Y: -5, SHOT_MADE_FLAG: 0, SHOT_TYPE: "2PT Field Goal" },
+  { LOC_X: -36, LOC_Y: 245, SHOT_MADE_FLAG: 1, SHOT_TYPE: "3PT Field Goal" },
+  { LOC_X: 32, LOC_Y: 30, SHOT_MADE_FLAG: 1, SHOT_TYPE: "2PT Field Goal" },
+  { LOC_X: 119, LOC_Y: 267, SHOT_MADE_FLAG: 0, SHOT_TYPE: "3PT Field Goal" },
+  { LOC_X: -83, LOC_Y: 132, SHOT_MADE_FLAG: 0, SHOT_TYPE: "2PT Field Goal" },
+  { LOC_X: 96, LOC_Y: 227, SHOT_MADE_FLAG: 0, SHOT_TYPE: "3PT Field Goal" },
+  { LOC_X: -49, LOC_Y: 192, SHOT_MADE_FLAG: 0, SHOT_TYPE: "2PT Field Goal" },
+];
