@@ -764,8 +764,26 @@ function arc(cx, cz, r, a0, a1, yPos, segs = 72, thick = 0.06) {
 }
 
 function buildCourt() {
-  // Apron (team-colored surround) — top at y=0.045, below court top at y=0.075, no z-fighting
-  box(114, 0.12, 95, 0, -0.015, -15.5, MAT_APRON);
+  // Apron (team-colored surround) — rounded rect, 26 ft margin on sides/baseline, 18 ft on half-court side
+  {
+    const hw = 51, hd = 45.5, r = 8;
+    const s = new THREE.Shape();
+    s.moveTo(-hw + r, -hd);
+    s.lineTo( hw - r, -hd);
+    s.absarc( hw - r, -hd + r, r, -Math.PI / 2, 0,           false);
+    s.lineTo( hw,      hd - r);
+    s.absarc( hw - r,  hd - r, r, 0,            Math.PI / 2,  false);
+    s.lineTo(-hw + r,  hd);
+    s.absarc(-hw + r,  hd - r, r, Math.PI / 2,  Math.PI,      false);
+    s.lineTo(-hw,     -hd + r);
+    s.absarc(-hw + r, -hd + r, r, Math.PI,      3 * Math.PI / 2, false);
+    const geo = new THREE.ExtrudeGeometry(s, { depth: 0.12, bevelEnabled: false });
+    const apron = new THREE.Mesh(geo, MAT_APRON);
+    apron.rotation.x = -Math.PI / 2;
+    apron.position.set(0, -0.075, -19.5);
+    apron.receiveShadow = true;
+    scene.add(apron);
+  }
 
   // Wood floor — half court, baseline at z=0, extends to z=-47
   box(50, 0.15, 47, 0, 0, -23.5, MAT_WOOD);
