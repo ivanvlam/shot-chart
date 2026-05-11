@@ -34,7 +34,7 @@
       top: 16px;
       display: flex;
       align-items: center;
-      height: 64px;
+      height: 72px;
       background: var(--card-bg);
       backdrop-filter: blur(28px) saturate(1.6);
       -webkit-backdrop-filter: blur(28px) saturate(1.6);
@@ -66,7 +66,7 @@
       gap: 2px;
     }
     #brand-top {
-      font-size: 10px;
+      font-size: 11px;
       font-weight: 700;
       letter-spacing: 0.22em;
       text-transform: uppercase;
@@ -74,13 +74,22 @@
       line-height: 1;
     }
     #brand-bot {
-      font-size: 13px;
+      font-size: 16px;
       font-weight: 700;
       letter-spacing: 0.08em;
       text-transform: uppercase;
       color: #fff;
       line-height: 1;
       white-space: nowrap;
+    }
+    #brand-season {
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.10em;
+      color: rgba(255,255,255,0.45);
+      line-height: 1;
+      white-space: nowrap;
+      margin-top: 3px;
     }
 
     #playback {
@@ -98,12 +107,12 @@
       border: none;
       color: #fff;
       font-family: 'Space Grotesk', sans-serif;
-      font-size: 12px;
+      font-size: 13px;
       font-weight: 700;
       letter-spacing: 0.1em;
       text-transform: uppercase;
-      padding: 0 20px;
-      height: 38px;
+      padding: 0 22px;
+      height: 40px;
       border-radius: 99px;
       cursor: pointer;
       white-space: nowrap;
@@ -146,34 +155,83 @@
     }
 
     .cfg-lbl {
-      font-size: 9px;
+      font-size: 11px;
       font-weight: 700;
-      letter-spacing: 0.2em;
+      letter-spacing: 0.16em;
       text-transform: uppercase;
-      color: var(--lbl);
+      color: rgba(255,255,255,0.55);
       line-height: 1;
     }
 
-    /* Player select */
-    #playerSelect {
-      -webkit-appearance: none;
-      appearance: none;
+    /* Player combobox */
+    .player-combo {
+      position: relative;
+      min-width: 160px;
+      max-width: 210px;
+    }
+    #playerInput {
+      width: 100%;
       background: transparent;
-      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='9' height='5' viewBox='0 0 9 5'%3E%3Cpath d='M0 0l4.5 5L9 0z' fill='%23888'/%3E%3C/svg%3E");
-      background-repeat: no-repeat;
-      background-position: right 2px center;
       border: none;
       color: #fff;
       font-family: 'Space Grotesk', sans-serif;
-      font-size: 13px;
+      font-size: 15px;
       font-weight: 600;
       outline: none;
       cursor: pointer;
-      min-width: 148px;
-      max-width: 180px;
       padding-right: 18px;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='9' height='5' viewBox='0 0 9 5'%3E%3Cpath d='M0 0l4.5 5L9 0z' fill='%23888'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 2px center;
     }
-    #playerSelect option { background: #0f1420; }
+    #playerInput::placeholder { color: rgba(255,255,255,0.35); font-weight: 500; }
+    #playerDropdown {
+      display: none;
+      position: fixed;
+      top: 88px;
+      right: 16px;
+      width: 220px;
+      max-height: 280px;
+      overflow-y: auto;
+      background: rgba(6, 8, 15, 0.97);
+      border: 1px solid rgba(255,255,255,0.12);
+      border-radius: 12px;
+      backdrop-filter: blur(24px);
+      -webkit-backdrop-filter: blur(24px);
+      z-index: 100;
+      padding: 4px 0;
+      scrollbar-width: thin;
+      scrollbar-color: rgba(255,255,255,0.15) transparent;
+    }
+    #playerDropdown.open { display: block; }
+    .player-opt {
+      padding: 7px 14px;
+      cursor: pointer;
+      display: flex;
+      flex-direction: column;
+      gap: 1px;
+    }
+    .player-opt:hover, .player-opt.focused {
+      background: rgba(255,255,255,0.07);
+    }
+    .player-opt-name {
+      font-size: 13px;
+      font-weight: 600;
+      color: #e8e8f0;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .player-opt-meta {
+      font-size: 10px;
+      font-weight: 500;
+      color: rgba(255,255,255,0.38);
+      letter-spacing: 0.04em;
+    }
+    .player-opt.no-data .player-opt-name { color: rgba(255,255,255,0.35); }
+    .player-opt.no-data .player-opt-meta::after { content: ' · no data'; }
+    #playerDropdown::-webkit-scrollbar { width: 4px; }
+    #playerDropdown::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.15); border-radius: 2px; }
 
     /* Made / Missed pill toggles */
     .pill-group { display: flex; gap: 5px; }
@@ -183,11 +241,11 @@
       border: 1px solid rgba(255,255,255,0.10);
       color: rgba(255,255,255,0.28);
       font-family: 'Space Grotesk', sans-serif;
-      font-size: 10px;
+      font-size: 12px;
       font-weight: 700;
       letter-spacing: 0.08em;
       text-transform: uppercase;
-      padding: 3px 11px;
+      padding: 4px 13px;
       border-radius: 99px;
       cursor: pointer;
       transition: background 0.15s, border-color 0.15s, color 0.15s;
@@ -205,34 +263,24 @@
     }
     .pill-btn:hover { opacity: 0.80; }
 
-    /* Speed segmented control */
-    .speed-seg {
-      display: flex;
-      background: rgba(255,255,255,0.05);
+    /* Speed select */
+    .speed-select {
+      appearance: none;
+      -webkit-appearance: none;
+      background: rgba(255,255,255,0.05) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='rgba(255,255,255,0.35)'/%3E%3C/svg%3E") no-repeat right 8px center;
       border: 1px solid rgba(255,255,255,0.08);
       border-radius: 8px;
-      overflow: hidden;
-    }
-    .seg-btn {
-      background: transparent;
-      border: none;
-      border-right: 1px solid rgba(255,255,255,0.07);
-      color: rgba(255,255,255,0.32);
+      color: rgba(255,255,255,0.85);
       font-family: 'Space Grotesk', sans-serif;
-      font-size: 10px;
+      font-size: 13px;
       font-weight: 700;
       letter-spacing: 0.04em;
-      padding: 4px 10px;
+      padding: 6px 28px 6px 11px;
       cursor: pointer;
-      transition: background 0.12s, color 0.12s;
-      white-space: nowrap;
+      width: 100%;
     }
-    .seg-btn:last-child { border-right: none; }
-    .seg-btn.active {
-      background: rgba(var(--accent-rgb), 0.30);
-      color: #fff;
-    }
-    .seg-btn:not(.active):hover { color: rgba(255,255,255,0.65); background: rgba(255,255,255,0.06); }
+    .speed-select:focus { outline: none; border-color: rgba(var(--accent-rgb), 0.6); }
+    .speed-select option { background: #1a2030; color: #fff; }
 
     /* Arena toggle switch */
     .arena-wrap {
@@ -363,25 +411,91 @@
       display: block;
     }
 
-    /* ── Hint ────────────────────────────────────────────────────── */
-    @keyframes fadeHint {
-      0%, 50% { opacity: 1; }
-      100%     { opacity: 0; pointer-events: none; }
-    }
-    #hint {
+    /* ── Instructions overlay ───────────────────────────────────── */
+    #instructions {
       position: fixed;
-      bottom: 106px;
-      right: 22px;
-      font-family: 'Space Grotesk', sans-serif;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 50;
+      pointer-events: auto;
+    }
+    #instructions.fade-out {
+      opacity: 0;
+      transition: opacity 0.7s ease;
+      pointer-events: none;
+    }
+    #instructions.hidden { display: none; }
+
+    #instr-card {
+      background: var(--card-bg);
+      backdrop-filter: blur(28px) saturate(1.6);
+      -webkit-backdrop-filter: blur(28px) saturate(1.6);
+      border: 1px solid var(--card-border);
+      border-left: 3px solid var(--accent);
+      border-radius: 18px;
+      padding: 28px 36px;
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+      min-width: 320px;
+    }
+    #instr-title {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.22em;
+      text-transform: uppercase;
+      color: var(--accent);
+    }
+    .instr-row {
+      display: flex;
+      gap: 16px;
+      align-items: baseline;
+    }
+    .instr-key {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: rgba(255,255,255,0.45);
+      width: 64px;
+      flex-shrink: 0;
+    }
+    .instr-val {
+      font-size: 13px;
+      font-weight: 500;
+      color: rgba(255,255,255,0.80);
+      line-height: 1.5;
+    }
+    #instr-dismiss {
+      margin-top: 4px;
       font-size: 11px;
       font-weight: 500;
-      letter-spacing: 0.04em;
+      letter-spacing: 0.06em;
       color: rgba(255,255,255,0.28);
-      text-align: right;
-      z-index: 10;
-      line-height: 2;
-      animation: fadeHint 5.5s ease forwards;
+      text-align: center;
     }
+
+    /* ── Help button ─────────────────────────────────────────────── */
+    #btnHelp {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.06);
+      border: 1px solid rgba(255,255,255,0.10);
+      color: rgba(255,255,255,0.55);
+      font-size: 15px;
+      font-weight: 700;
+      font-family: 'Space Grotesk', sans-serif;
+      display: grid;
+      place-items: center;
+      cursor: pointer;
+      padding: 0;
+      transition: background 0.15s, color 0.15s;
+    }
+    #btnHelp:hover  { background: rgba(255,255,255,0.12); color: #fff; }
+    #btnHelp:active { background: rgba(255,255,255,0.04); }
   </style>
 </head>
 <body>
@@ -393,11 +507,13 @@
   <div id="brand">
     <div id="brand-top">NBA</div>
     <div id="brand-bot">Shot Chart 3D</div>
+    <div id="brand-season">2025–26 Regular Season</div>
   </div>
   <div class="card-div"></div>
   <div id="playback">
-    <button id="btnPlay">&#9654; Play</button>
+    <button id="btnPlay">⏸ Pause</button>
     <button id="btnReplay" title="Replay">&#8635;</button>
+    <button id="btnHelp" title="Help">?</button>
   </div>
 </div>
 
@@ -405,17 +521,9 @@
 <div id="ctrl-right" class="hud-card">
   <div class="cfg-sec">
     <span class="cfg-lbl">Player</span>
-    <select id="playerSelect">
-      <option value="warriors">Stephen Curry</option>
-      <option value="lakers">LeBron James</option>
-      <option value="celtics">Jayson Tatum</option>
-      <option value="bulls">Zach LaVine</option>
-      <option value="heat">Jimmy Butler</option>
-      <option value="thunder">Shai Gilgeous-Alexander</option>
-      <option value="knicks">Jalen Brunson</option>
-      <option value="nuggets">Nikola Jokic</option>
-      <option value="spurs">Victor Wembanyama</option>
-    </select>
+    <div class="player-combo">
+      <input id="playerInput" type="text" autocomplete="off" spellcheck="false" placeholder="Search player…" />
+    </div>
   </div>
   <div class="card-div"></div>
   <div class="cfg-sec">
@@ -428,12 +536,13 @@
   <div class="card-div"></div>
   <div class="cfg-sec">
     <span class="cfg-lbl">Speed</span>
-    <div class="speed-seg">
-      <button class="seg-btn" data-speed="0.5">0.5×</button>
-      <button class="seg-btn active" data-speed="1">1×</button>
-      <button class="seg-btn" data-speed="2">2×</button>
-      <button class="seg-btn" data-speed="5">5×</button>
-    </div>
+    <select id="speedSelect" class="speed-select">
+      <option value="0.5">0.5×</option>
+      <option value="1" selected>1×</option>
+      <option value="2">2×</option>
+      <option value="5">5×</option>
+      <option value="10">10×</option>
+    </select>
   </div>
   <div class="card-div"></div>
   <label class="arena-wrap">
@@ -444,6 +553,8 @@
     </div>
   </label>
 </div>
+
+<div id="playerDropdown"></div>
 
 <div id="stats">
   <div class="stat-side stat-made">
@@ -476,10 +587,39 @@
   </div>
 </div>
 
-<div id="hint">
-  Drag to rotate &nbsp;|&nbsp; Scroll to zoom<br/>
-  Right-drag to pan
+<div id="instructions">
+  <div id="instr-card">
+    <div id="instr-title">How to use</div>
+    <div class="instr-row">
+      <span class="instr-key">Navigate</span>
+      <span class="instr-val">Drag to rotate &nbsp;·&nbsp; Scroll to zoom &nbsp;·&nbsp; Right-drag to pan</span>
+    </div>
+    <div class="instr-row">
+      <span class="instr-key">Player</span>
+      <span class="instr-val">Search by name - top right</span>
+    </div>
+    <div class="instr-row">
+      <span class="instr-key">Filter</span>
+      <span class="instr-val">Toggle Made / Missed shots</span>
+    </div>
+    <div class="instr-row">
+      <span class="instr-key">Speed</span>
+      <span class="instr-val">Control animation speed</span>
+    </div>
+    <div id="instr-dismiss">Click anywhere or press any key to dismiss</div>
+  </div>
 </div>
+
+<script>
+window.onerror = function(msg, src, line, col, err) {
+  var d = document.getElementById('err-overlay');
+  if (!d) { d = document.createElement('div'); d.id = 'err-overlay'; Object.assign(d.style, {position:'fixed',top:'10px',left:'10px',right:'10px',background:'#c0392b',color:'#fff',padding:'12px 16px',borderRadius:'6px',fontFamily:'monospace',fontSize:'13px',zIndex:9999,whiteSpace:'pre-wrap'}); document.body.appendChild(d); }
+  d.textContent += (src ? src.split('/').pop() + ':' + line + '\n' : '') + msg + '\n';
+};
+window.addEventListener('unhandledrejection', function(e) {
+  window.onerror(String(e.reason), '', 0);
+});
+</script>
 
 <script type="importmap">
 {
@@ -493,62 +633,14 @@
 <script type="module">
 import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+import { ROSTER } from './data/roster.js';
 
 // ---------------------------------------------------------------------------
-// Shot data  (LOC_X, LOC_Y in tenths of a foot from hoop center)
-// SHOT_MADE_FLAG: 1 = made, 0 = missed
+// Shot data — loaded dynamically per player
 // ---------------------------------------------------------------------------
-const RAW_SHOTS = [
-  // Close range / layups
-  { LOC_X:  10,  LOC_Y:  20, SHOT_MADE_FLAG: 1, SHOT_TYPE: '2PT' },
-  { LOC_X: -15,  LOC_Y:  30, SHOT_MADE_FLAG: 1, SHOT_TYPE: '2PT' },
-  { LOC_X:  25,  LOC_Y:  15, SHOT_MADE_FLAG: 0, SHOT_TYPE: '2PT' },
-  { LOC_X:  -5,  LOC_Y:  25, SHOT_MADE_FLAG: 1, SHOT_TYPE: '2PT' },
-
-  // Mid-range
-  { LOC_X:   80,  LOC_Y:  80, SHOT_MADE_FLAG: 1, SHOT_TYPE: '2PT' },
-  { LOC_X:  -90,  LOC_Y: 100, SHOT_MADE_FLAG: 0, SHOT_TYPE: '2PT' },
-  { LOC_X:  120,  LOC_Y:  60, SHOT_MADE_FLAG: 1, SHOT_TYPE: '2PT' },
-  { LOC_X: -110,  LOC_Y:  80, SHOT_MADE_FLAG: 0, SHOT_TYPE: '2PT' },
-  { LOC_X:    0,  LOC_Y: 130, SHOT_MADE_FLAG: 1, SHOT_TYPE: '2PT' },
-  { LOC_X:   50,  LOC_Y: 150, SHOT_MADE_FLAG: 0, SHOT_TYPE: '2PT' },
-  { LOC_X:  -50,  LOC_Y: 140, SHOT_MADE_FLAG: 1, SHOT_TYPE: '2PT' },
-
-  // Corner 3s
-  { LOC_X:  220, LOC_Y:  -30, SHOT_MADE_FLAG: 1, SHOT_TYPE: '3PT' },
-  { LOC_X: -220, LOC_Y:  -30, SHOT_MADE_FLAG: 0, SHOT_TYPE: '3PT' },
-  { LOC_X:  220, LOC_Y:   20, SHOT_MADE_FLAG: 1, SHOT_TYPE: '3PT' },
-  { LOC_X: -220, LOC_Y:   10, SHOT_MADE_FLAG: 0, SHOT_TYPE: '3PT' },
-
-  // Above-the-break 3s
-  { LOC_X:    0, LOC_Y: 240, SHOT_MADE_FLAG: 1, SHOT_TYPE: '3PT' },
-  { LOC_X:   60, LOC_Y: 235, SHOT_MADE_FLAG: 0, SHOT_TYPE: '3PT' },
-  { LOC_X:  -70, LOC_Y: 240, SHOT_MADE_FLAG: 1, SHOT_TYPE: '3PT' },
-  { LOC_X:  140, LOC_Y: 200, SHOT_MADE_FLAG: 0, SHOT_TYPE: '3PT' },
-  { LOC_X: -150, LOC_Y: 195, SHOT_MADE_FLAG: 1, SHOT_TYPE: '3PT' },
-  { LOC_X:  200, LOC_Y: 140, SHOT_MADE_FLAG: 0, SHOT_TYPE: '3PT' },
-  { LOC_X: -200, LOC_Y: 130, SHOT_MADE_FLAG: 1, SHOT_TYPE: '3PT' },
-  { LOC_X:   30, LOC_Y: 250, SHOT_MADE_FLAG: 0, SHOT_TYPE: '3PT' },
-
-  // Half-court heave (LOC_Y=415 ≈ 41.5 ft from hoop ≈ just inside half-court)
-  { LOC_X: 0, LOC_Y: 415, SHOT_MADE_FLAG: 0, SHOT_TYPE: '3PT' },
-];
-
-// ---------------------------------------------------------------------------
-// Team colors
-// ---------------------------------------------------------------------------
-const TEAMS = {
-  warriors: { color: 0x1d428a },
-  lakers:   { color: 0x552583 },
-  celtics:  { color: 0x007a33 },
-  bulls:    { color: 0xce1141 },
-  heat:     { color: 0x98002e },
-  thunder:  { color: 0x007ac1 },
-  knicks:   { color: 0x006bb6 },
-  nuggets:  { color: 0x0e2240 },
-  spurs:    { color: 0x8a8d8f },
-};
-let currentTeam = 'warriors';
+let RAW_SHOTS = [];
+const shotCache = new Map();   // player id → shot array
+let currentPlayer = null;
 
 const CROWD_COUNT = 720;
 let arenaGroup = null;
@@ -556,8 +648,8 @@ let crowdMesh  = null;
 let crowdTypes = null;
 let crowdBaseMatrices = null;
 let crowdWaves = [];        // { time, delays, maxDelay } — one entry per made shot
-const JUMP_PER    = 0.38;
-const JUMP_HEIGHT = 1.4;
+const JUMP_PER    = 0.28;
+const JUMP_HEIGHT = 0.55;
 
 // ---------------------------------------------------------------------------
 // Coordinate mapping
@@ -595,7 +687,7 @@ scene.background = new THREE.Color(0x0d1018);
 scene.fog = new THREE.Fog(0x0d1018, 80, 155);
 
 const camera = new THREE.PerspectiveCamera(50, window.innerWidth / window.innerHeight, 0.1, 300);
-camera.position.set(0, 30, -70);
+camera.position.set(0, 30, -80);
 camera.lookAt(0, 10, HOOP_Z);
 
 const controls = new OrbitControls(camera, canvas);
@@ -646,7 +738,8 @@ scene.add(fillDir, fillDir.target);
 // ---------------------------------------------------------------------------
 const MAT_WOOD  = new THREE.MeshStandardMaterial({ color: 0xc8924a, roughness: 0.78 });
 const MAT_LINE  = new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 1 });
-const MAT_APRON = new THREE.MeshStandardMaterial({ color: TEAMS[currentTeam].color, roughness: 0.88 });
+const MAT_APRON = new THREE.MeshStandardMaterial({ color: 0x1d428a, roughness: 0.88 });
+
 
 function box(w, h, d, x, y, z, mat, shadow = true) {
   const m = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), mat);
@@ -811,9 +904,9 @@ function buildBasket() {
 // ---------------------------------------------------------------------------
 // Arena + crowd
 // ---------------------------------------------------------------------------
-function updateCrowdColors(teamKey) {
+function updateCrowdColors(hexColor) {
   if (!crowdMesh) return;
-  const accentC = new THREE.Color(TEAMS[teamKey].color);
+  const accentC = new THREE.Color(hexColor);
   const lightC  = new THREE.Color(0xf0e8e0);
   const darkC   = new THREE.Color(0x2a2a3a);
   for (let i = 0; i < crowdMesh.count; i++) {
@@ -863,7 +956,7 @@ function buildArena() {
   arenaGroup.add(ground);
 
   // Bleacher geometry (stepped tiers)
-  const bleachMat = new THREE.MeshStandardMaterial({ color: 0x1a2235, roughness: 0.95 });
+  const bleachMat = new THREE.MeshStandardMaterial({ color: 0x0a0e18, roughness: 0.95 });
   function addTier(w, d, x, y, z) {
     const m = new THREE.Mesh(new THREE.BoxGeometry(w, 1.0, d), bleachMat);
     m.position.set(x, y, z);
@@ -924,7 +1017,7 @@ function buildArena() {
     crowdBaseMatrices[i] = _snap.clone();
   }
 
-  updateCrowdColors(currentTeam);
+  if (currentPlayer) updateCrowdColors(currentPlayer.color);
 }
 
 function triggerCrowdJump() {
@@ -950,10 +1043,10 @@ const MAT_MADE = new THREE.MeshStandardMaterial({ color: 0x3ddc6a, emissive: 0x2
 const MAT_MISS = new THREE.MeshStandardMaterial({ color: 0xe04444, emissive: 0xaa2222, emissiveIntensity: 0.7, roughness: 0.35 });
 
 // Shared floor-marker materials (not disposed per-shot since they're reused)
-const MAT_DOT_MADE_FILL = new THREE.MeshBasicMaterial({ color: 0x3ddc6a, transparent: true, opacity: 0.92, blending: THREE.NormalBlending, depthWrite: false });
-const MAT_DOT_MISS_FILL = new THREE.MeshBasicMaterial({ color: 0xe04444, transparent: true, opacity: 0.92, blending: THREE.NormalBlending, depthWrite: false });
-const MAT_DOT_MADE_RING = new THREE.MeshBasicMaterial({ color: 0x2ab854, transparent: true, opacity: 0.55, blending: THREE.NormalBlending, depthWrite: false });
-const MAT_DOT_MISS_RING = new THREE.MeshBasicMaterial({ color: 0xc43030, transparent: true, opacity: 0.55, blending: THREE.NormalBlending, depthWrite: false });
+const MAT_DOT_MADE_FILL = new THREE.MeshBasicMaterial({ color: 0x3ddc6a, transparent: true, opacity: 1.0, depthWrite: false });
+const MAT_DOT_MISS_FILL = new THREE.MeshBasicMaterial({ color: 0xe04444, transparent: true, opacity: 1.0, depthWrite: false });
+const MAT_DOT_MADE_RING = new THREE.MeshBasicMaterial({ color: 0x2ab854, transparent: true, opacity: 0.65, depthWrite: false });
+const MAT_DOT_MISS_RING = new THREE.MeshBasicMaterial({ color: 0xc43030, transparent: true, opacity: 0.65, depthWrite: false });
 
 // ---------------------------------------------------------------------------
 // Shot system
@@ -967,7 +1060,7 @@ let activeShots = [];
 let shotQueue = [];
 let firedSet = new Set();
 let queueTimer = 0;
-let playing = false;
+let playing = true;
 let sequenceDone = false;
 let speed = 1;
 let showMade = true;
@@ -978,7 +1071,7 @@ let zoneCounts = { paint: [0,0], mid: [0,0], three: [0,0] }; // [made, total]
 
 function classifyZone(raw) {
   const ax = Math.abs(raw.LOC_X);
-  if (raw.SHOT_TYPE === '3PT') return ax >= 220 ? 'corner3' : 'three';
+  if (raw.SHOT_TYPE.startsWith('3PT')) return ax >= 220 ? 'corner3' : 'three';
   if (ax <= 80 && raw.LOC_Y <= 190) return 'paint';
   return 'mid';
 }
@@ -1018,19 +1111,24 @@ function prepareShots() {
     const dist   = origin.distanceTo(hoop);
     const maxH   = 3.5 + dist * 0.09;
 
-    return { raw, origin, end, maxH, made, floor, zone: classifyZone(raw) };
+    return { raw, origin, end, maxH, made, floor, zone: classifyZone(raw), heave: raw.LOC_Y > 417 };
   });
 }
 
 function filteredIndices() {
-  return shots
-    .map((_, i) => i)
-    .filter((i) => (shots[i].made && showMade) || (!shots[i].made && showMissed));
+  return shots.map((_, i) => i);
 }
 
 function fireShotAt(idx) {
   firedSet.add(idx);
   const s = shots[idx];
+
+  if (s.heave || (s.made && !showMade) || (!s.made && !showMissed)) {
+    if (s.made) madeCount++; else missCount++;
+    updateZoneStats(s.zone, s.made);
+    refreshStats();
+    return;
+  }
 
   const ball = new THREE.Mesh(
     new THREE.SphereGeometry(0.36, 16, 16),
@@ -1272,8 +1370,8 @@ function tick(now) {
       if (s.made) madeCount++; else missCount++;
       refreshStats();
       updateZoneStats(s.zone, s.made);
-      if (s.made) { triggerCrowdJump(); addMadeSplash(s.idx); }
-      else         { addMissBounce(s.end, s.idx); }
+      if (s.made) { if (showMade) { triggerCrowdJump(); addMadeSplash(s.idx); } }
+      else         { if (showMissed) addMissBounce(s.end, s.idx); }
       scene.remove(s.ball);
       scene.remove(s.trailMesh); s.trailGeo.dispose(); s.trailMat.dispose();
       scene.remove(s.ballLight);
@@ -1377,7 +1475,7 @@ function tick(now) {
     }
   }
 
-  if (playing && shotQueue.length === 0 && activeShots.every((s) => s.done)) {
+  if (playing && shots.length > 0 && shotQueue.length === 0 && activeShots.every((s) => s.done)) {
     playing = false;
     sequenceDone = true;
     document.getElementById('btnPlay').textContent = '↺ Replay';
@@ -1404,12 +1502,8 @@ document.getElementById('btnReplay').addEventListener('click', () => {
   btnPlay.textContent = '⏸ Pause';
 });
 
-document.querySelectorAll('.seg-btn').forEach((btn) => {
-  btn.addEventListener('click', () => {
-    document.querySelectorAll('.seg-btn').forEach((b) => b.classList.remove('active'));
-    btn.classList.add('active');
-    speed = parseFloat(btn.dataset.speed);
-  });
+document.getElementById('speedSelect').addEventListener('change', (e) => {
+  speed = parseFloat(e.target.value);
 });
 
 function rebuildQueue() {
@@ -1427,68 +1521,77 @@ function refreshStats() {
   document.getElementById('statThreePct').textContent = pct(zoneCounts.three);
 }
 
-function cleanupExcludedShots() {
-  // Remove in-flight (not yet landed) shots that no longer pass the filter
-  for (let i = activeShots.length - 1; i >= 0; i--) {
-    const e = activeShots[i];
-    const excluded = (e.made && !showMade) || (!e.made && !showMissed);
-    if (!excluded || e.done) continue; // leave already-landed shots alone
-    scene.remove(e.ball); e.ball.geometry.dispose();
-    scene.remove(e.trailMesh); e.trailGeo.dispose(); e.trailMat.dispose();
-    scene.remove(e.ballLight);
-    dotGroup.remove(e.dotDot); e.dotDot.geometry.dispose();
-    dotGroup.remove(e.dotRing); e.dotRing.geometry.dispose();
-    firedSet.delete(e.idx);
-    const k = zoneKey(shots[e.idx].zone);
-    zoneCounts[k][1]--;
-    if (e.made) { madeCount--; zoneCounts[k][0]--; } else missCount--;
-    activeShots.splice(i, 1);
-  }
-  // Remove active splash effects that no longer pass the filter
-  for (let i = splashEffects.length - 1; i >= 0; i--) {
-    const ef = splashEffects[i];
-    const isMade = ef.type === 'made';
-    if ((isMade && showMade) || (!isMade && showMissed)) continue;
-    if (isMade) {
-      scene.remove(ef.mesh); ef.mesh.geometry.dispose(); ef.mat.dispose();
-    } else {
-      scene.remove(ef.ball); ef.ball.geometry.dispose(); ef.ballMat.dispose();
-      scene.remove(ef.ripple); ef.ripple.geometry.dispose(); ef.ripMat.dispose();
+function applyFilterVisibility() {
+  for (const e of activeShots) {
+    const show = (e.made && showMade) || (!e.made && showMissed);
+    if (e.dotDot) e.dotDot.visible = show;
+    if (e.dotRing) e.dotRing.visible = show;
+    if (!e.done) {
+      e.ball.visible = show;
+      e.trailMesh.visible = show;
+      e.ballLight.visible = show;
     }
-    splashEffects.splice(i, 1);
   }
-  refreshStats();
+  for (const ef of splashEffects) {
+    const show = (ef.type === 'made' && showMade) || (ef.type === 'miss' && showMissed);
+    if (ef.type === 'made') ef.mesh.visible = show;
+    else { ef.ball.visible = show; ef.ripple.visible = show; }
+  }
 }
 
 document.getElementById('btnMade').addEventListener('click', () => {
   showMade = !showMade;
   document.getElementById('btnMade').classList.toggle('active-made', showMade);
   rebuildQueue();
-  cleanupExcludedShots();
+  applyFilterVisibility();
 });
 
 document.getElementById('btnMiss').addEventListener('click', () => {
   showMissed = !showMissed;
   document.getElementById('btnMiss').classList.toggle('active-miss', showMissed);
   rebuildQueue();
-  cleanupExcludedShots();
+  applyFilterVisibility();
 });
 
-function applyTeamColor(teamKey) {
-  const { color } = TEAMS[teamKey];
-  const c = new THREE.Color(color);
+function applyTeamColor(hexColor) {
+  const c = new THREE.Color(hexColor);
   MAT_APRON.color.copy(c);
-  const hex = '#' + color.toString(16).padStart(6, '0');
+  const hex = '#' + hexColor.toString(16).padStart(6, '0');
   const r = Math.round(c.r * 255), g = Math.round(c.g * 255), b = Math.round(c.b * 255);
   document.documentElement.style.setProperty('--accent', hex);
   document.documentElement.style.setProperty('--accent-rgb', `${r}, ${g}, ${b}`);
-  updateCrowdColors(teamKey);
+  updateCrowdColors(hexColor);
 }
 
-document.getElementById('playerSelect').addEventListener('change', (e) => {
-  currentTeam = e.target.value;
-  applyTeamColor(currentTeam);
-});
+async function loadPlayer(player) {
+  currentPlayer = player;
+  applyTeamColor(player.color);
+
+  if (!player.hasData) {
+    RAW_SHOTS = [];
+    resetAll();
+    document.getElementById('playerInput').value = player.name;
+    return;
+  }
+
+  let cached = shotCache.get(player.id);
+  if (!cached) {
+    try {
+      const mod = await import(`./data/shots/${player.id}.js`);
+      cached = mod[`SHOTS_${player.id}`];
+      shotCache.set(player.id, cached);
+    } catch {
+      cached = [];
+    }
+  }
+  RAW_SHOTS = cached;
+  prepareShots();
+  resetAll();
+  const instrHidden = document.getElementById('instructions').classList.contains('hidden');
+  playing = instrHidden;
+  document.getElementById('btnPlay').textContent = playing ? '⏸ Pause' : '▶ Play';
+  document.getElementById('playerInput').value = player.name;
+}
 
 document.getElementById('chkArena').addEventListener('change', (e) => {
   if (arenaGroup) arenaGroup.visible = e.target.checked;
@@ -1501,17 +1604,136 @@ window.addEventListener('resize', () => {
 });
 
 // ---------------------------------------------------------------------------
+// Player combobox
+// ---------------------------------------------------------------------------
+{
+  const input = document.getElementById('playerInput');
+  const dropdown = document.getElementById('playerDropdown');
+  let focusIdx = -1;
+  let filteredPlayers = [];
+
+  function renderDropdown(query) {
+    const q = query.toLowerCase().trim();
+    filteredPlayers = q ? ROSTER.filter(p => p.name.toLowerCase().includes(q)) : ROSTER;
+    focusIdx = -1;
+    dropdown.innerHTML = '';
+    filteredPlayers.forEach((p, i) => {
+      const el = document.createElement('div');
+      el.className = 'player-opt' + (p.hasData ? '' : ' no-data');
+      el.dataset.idx = i;
+      el.innerHTML =
+        `<span class="player-opt-name">${p.name}</span>` +
+        `<span class="player-opt-meta">${p.team}</span>`;
+      el.addEventListener('mousedown', (e) => {
+        e.preventDefault();
+        selectPlayer(p);
+      });
+      dropdown.appendChild(el);
+    });
+    // when showing the full list, scroll to the current player
+    if (!q && currentPlayer) {
+      focusIdx = filteredPlayers.findIndex(p => p.id === currentPlayer.id);
+      const opts = dropdown.querySelectorAll('.player-opt');
+      if (focusIdx >= 0) {
+        opts[focusIdx].classList.add('focused');
+        setTimeout(() => opts[focusIdx].scrollIntoView({ block: 'center' }), 0);
+      }
+    }
+    dropdown.classList.add('open');
+  }
+
+  function selectPlayer(p) {
+    input.value = p.name;
+    dropdown.classList.remove('open');
+    input.blur();
+    loadPlayer(p);
+  }
+
+  function moveFocus(dir) {
+    const opts = dropdown.querySelectorAll('.player-opt');
+    if (!opts.length) return;
+    focusIdx = Math.max(0, Math.min(opts.length - 1, focusIdx + dir));
+    opts.forEach((el, i) => el.classList.toggle('focused', i === focusIdx));
+    opts[focusIdx].scrollIntoView({ block: 'nearest' });
+  }
+
+  input.addEventListener('focus', () => { input.select(); renderDropdown(''); });
+  input.addEventListener('input', () => renderDropdown(input.value));
+  input.addEventListener('blur', () => {
+    // restore current player name — prevents arbitrary text from sticking
+    setTimeout(() => {
+      dropdown.classList.remove('open');
+      if (currentPlayer) input.value = currentPlayer.name;
+    }, 150);
+  });
+  input.addEventListener('keydown', (e) => {
+    if (e.key === 'ArrowDown') { e.preventDefault(); moveFocus(1); }
+    else if (e.key === 'ArrowUp') { e.preventDefault(); moveFocus(-1); }
+    else if (e.key === 'Enter') {
+      if (focusIdx >= 0 && filteredPlayers[focusIdx]) selectPlayer(filteredPlayers[focusIdx]);
+      else if (filteredPlayers.length === 1) selectPlayer(filteredPlayers[0]);
+    }
+    else if (e.key === 'Escape') {
+      dropdown.classList.remove('open');
+      input.blur();
+    }
+  });
+}
+
+// ---------------------------------------------------------------------------
 // Boot
 // ---------------------------------------------------------------------------
-applyTeamColor(currentTeam);
-buildArena();
-buildCourt();
-build3PointArc();
-buildBasket();
-prepareShots();
-shotQueue = [...filteredIndices()];
+try {
+  buildArena();
+  buildCourt();
+  build3PointArc();
+  buildBasket();
+  prepareShots();
+  shotQueue = [...filteredIndices()];
+  requestAnimationFrame(tick);
 
-requestAnimationFrame(tick);
+  const firstPlayer = ROSTER.find(p => p.hasData) ?? ROSTER[0];
+  if (firstPlayer) loadPlayer(firstPlayer).catch(e => window.onerror(String(e)));
+} catch(e) {
+  window.onerror(e.message + '\n' + e.stack, '', 0);
+}
+
+// ---------------------------------------------------------------------------
+// Instructions overlay
+// ---------------------------------------------------------------------------
+{
+  const overlay = document.getElementById('instructions');
+  let dismissTimer = null;
+
+  function showInstructions() {
+    overlay.classList.remove('hidden', 'fade-out');
+    clearTimeout(dismissTimer);
+    dismissTimer = setTimeout(dismissInstructions, 6000);
+  }
+
+  function dismissInstructions() {
+    overlay.classList.add('fade-out');
+    overlay.addEventListener('transitionend', () => {
+      overlay.classList.add('hidden');
+      if (shots.length > 0 && !playing) {
+        playing = true;
+        document.getElementById('btnPlay').textContent = '⏸ Pause';
+      }
+    }, { once: true });
+  }
+
+  overlay.addEventListener('click', dismissInstructions);
+  document.addEventListener('keydown', (e) => {
+    if (!overlay.classList.contains('hidden')) dismissInstructions();
+  }, { once: false });
+
+  document.getElementById('btnHelp').addEventListener('click', (e) => {
+    e.stopPropagation();
+    showInstructions();
+  });
+
+  showInstructions();
+}
 </script>
 </body>
 </html>
