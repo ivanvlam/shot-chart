@@ -3,10 +3,6 @@
 CLAUDE.md
 .DS_Store
 
-# Generated shot data (pre-fetched via scripts/fetch_shots.py)
-data/shots/
-data/roster.js
-
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[codz]
