@@ -508,7 +508,7 @@
       display: flex;
       flex-direction: column;
       overflow: hidden;
-      transition: height 0.28s cubic-bezier(0.4, 0, 0.2, 1);
+      transition: transform 0.35s ease;
     }
     #picker-results { transition: opacity 0.18s ease; }
     #picker-results.fading { opacity: 0; }
@@ -675,8 +675,6 @@
       flex-direction: column;
       gap: 5px;
       animation: ppCardIn 0.20s ease-out both;
-      content-visibility: auto;
-      contain-intrinsic-size: 74px;
     }
     @keyframes ppCardIn {
       from { opacity: 0; transform: translateY(4px); }
@@ -981,7 +979,11 @@
       .stat-lbl { font-size: 8px; letter-spacing: 0.16em; }
 
 
-      #picker-card { width: calc(100vw - 20px); border-radius: 12px; }
+      #picker-card {
+        width: calc(100vw - 20px);
+        max-height: calc(100vh - 20px);
+        border-radius: 12px;
+      }
       #picker-header { padding: 18px 18px 12px; }
       #picker-header-top { flex-direction: column; gap: 12px; }
       #picker-repo-link { align-self: flex-start; padding: 6px 9px; font-size: 10px; }
@@ -2758,10 +2760,30 @@ const picker = (() => {
     filterFrame = requestAnimationFrame(applyFilters);
   }
 
+  function maxPickerHeight() {
+    return window.innerHeight - (window.matchMedia('(max-width: 720px)').matches ? 20 : 80);
+  }
+
+  function measureNaturalPickerHeight(cardEl, pinnedHeight) {
+    const prevTransition = cardEl.style.transition;
+    cardEl.style.transition = 'none';
+    cardEl.style.height = '';
+    const naturalHeight = Math.min(cardEl.scrollHeight, maxPickerHeight());
+    cardEl.style.height = pinnedHeight;
+    cardEl.style.transition = prevTransition;
+    return naturalHeight;
+  }
+
   function render(rows) {
     const cardEl = document.getElementById('picker-card');
     const animateHeight = renderedOnce && root.classList.contains('visible');
-    const fromH = animateHeight ? cardEl.getBoundingClientRect().height : 0;
+    const fromHeight = animateHeight ? cardEl.getBoundingClientRect().height : 0;
+    const pinnedHeight = `${fromHeight}px`;
+
+    if (animateHeight) {
+      cardEl.style.transition = 'none';
+      cardEl.style.height = pinnedHeight;
+    }
 
     grid.replaceChildren();
     if (rows.length === 0) {
@@ -2827,23 +2849,22 @@ const picker = (() => {
     grid.appendChild(frag);
     renderedOnce = true;
 
-    // FLIP: animate card height from previous to natural new height.
-    if (animateHeight && fromH > 0) {
-      cardEl.style.transition = 'none';
-      cardEl.style.height = '';
-      const toH = cardEl.getBoundingClientRect().height;
-      if (Math.abs(toH - fromH) > 4) {
-        cardEl.style.height = fromH + 'px';
+    if (animateHeight) {
+      const toHeight = measureNaturalPickerHeight(cardEl, pinnedHeight);
+      if (Math.abs(toHeight - fromHeight) > 4) {
+        cardEl.style.height = pinnedHeight;
         void cardEl.offsetHeight;
-        cardEl.style.transition = 'height 0.28s cubic-bezier(0.4, 0, 0.2, 1)';
-        cardEl.style.height = toH + 'px';
+        cardEl.style.transition = 'height 0.24s cubic-bezier(0.4, 0, 0.2, 1)';
+        cardEl.style.height = `${toHeight}px`;
         clearTimeout(cardEl._hTimer);
         cardEl._hTimer = setTimeout(() => {
           cardEl.style.transition = '';
-          cardEl.style.height = '';
-        }, 320);
+          const settledHeight = Math.min(cardEl.scrollHeight, maxPickerHeight());
+          cardEl.style.height = `${settledHeight}px`;
+        }, 280);
       } else {
-        cardEl.style.height = '';
+        cardEl.style.transition = '';
+        cardEl.style.height = `${toHeight}px`;
       }
     }
   }
