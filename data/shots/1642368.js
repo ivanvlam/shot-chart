@@ -1,6 +1,6 @@
 export const SHOTS_1642368 = [
-  { LOC_X: 4, LOC_Y: 18, SHOT_MADE_FLAG: 1, SHOT_TYPE: "2PT Field Goal" },
-  { LOC_X: 0, LOC_Y: 0, SHOT_MADE_FLAG: 0, SHOT_TYPE: "2PT Field Goal" },
-  { LOC_X: 29, LOC_Y: 34, SHOT_MADE_FLAG: 0, SHOT_TYPE: "2PT Field Goal" },
-  { LOC_X: 105, LOC_Y: 20, SHOT_MADE_FLAG: 0, SHOT_TYPE: "2PT Field Goal" },
+  { LOC_X: 4, LOC_Y: 18, SHOT_MADE_FLAG: 1, SHOT_TYPE: "2PT Field Goal", PERIOD: 4, ACTION_TYPE: "Running Dunk Shot", SHOT_DISTANCE: 1 },
+  { LOC_X: 0, LOC_Y: 0, SHOT_MADE_FLAG: 0, SHOT_TYPE: "2PT Field Goal", PERIOD: 1, ACTION_TYPE: "Tip Layup Shot", SHOT_DISTANCE: 0 },
+  { LOC_X: 29, LOC_Y: 34, SHOT_MADE_FLAG: 0, SHOT_TYPE: "2PT Field Goal", PERIOD: 1, ACTION_TYPE: "Putback Layup Shot", SHOT_DISTANCE: 4 },
+  { LOC_X: 105, LOC_Y: 20, SHOT_MADE_FLAG: 0, SHOT_TYPE: "2PT Field Goal", PERIOD: 4, ACTION_TYPE: "Jump Shot", SHOT_DISTANCE: 10 },
 ];

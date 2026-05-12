@@ -1,7 +1,7 @@
 export const SHOTS_1631115 = [
-  { LOC_X: 119, LOC_Y: 227, SHOT_MADE_FLAG: 0, SHOT_TYPE: "3PT Field Goal" },
-  { LOC_X: 81, LOC_Y: 21, SHOT_MADE_FLAG: 0, SHOT_TYPE: "2PT Field Goal" },
-  { LOC_X: -28, LOC_Y: 9, SHOT_MADE_FLAG: 1, SHOT_TYPE: "2PT Field Goal" },
-  { LOC_X: -195, LOC_Y: 159, SHOT_MADE_FLAG: 1, SHOT_TYPE: "3PT Field Goal" },
-  { LOC_X: 29, LOC_Y: 5, SHOT_MADE_FLAG: 1, SHOT_TYPE: "2PT Field Goal" },
+  { LOC_X: 119, LOC_Y: 227, SHOT_MADE_FLAG: 0, SHOT_TYPE: "3PT Field Goal", PERIOD: 4, ACTION_TYPE: "Jump Shot", SHOT_DISTANCE: 25 },
+  { LOC_X: 81, LOC_Y: 21, SHOT_MADE_FLAG: 0, SHOT_TYPE: "2PT Field Goal", PERIOD: 1, ACTION_TYPE: "Tip Layup Shot", SHOT_DISTANCE: 8 },
+  { LOC_X: -28, LOC_Y: 9, SHOT_MADE_FLAG: 1, SHOT_TYPE: "2PT Field Goal", PERIOD: 1, ACTION_TYPE: "Reverse Layup Shot", SHOT_DISTANCE: 2 },
+  { LOC_X: -195, LOC_Y: 159, SHOT_MADE_FLAG: 1, SHOT_TYPE: "3PT Field Goal", PERIOD: 1, ACTION_TYPE: "Jump Shot", SHOT_DISTANCE: 25 },
+  { LOC_X: 29, LOC_Y: 5, SHOT_MADE_FLAG: 1, SHOT_TYPE: "2PT Field Goal", PERIOD: 2, ACTION_TYPE: "Driving Layup Shot", SHOT_DISTANCE: 2 },
 ];
