@@ -1,21 +1,25 @@
 # NBA Shot Chart 3D
 
-3D shot chart for NBA players built with Three.js. Animates every field goal attempt from the 2025-26 regular season over a half-court scene.
+3D shot chart for NBA players built with Three.js. Animates field goal attempts from the 2025-26 regular season over a half-court scene.
+
+**Note:** shots taken from behind half court are not shown in the animation, but they are included in the stats.
 
 **Live:** https://ivanvlam.github.io/shot-chart/
 
 ## Features
 
 - **Shot data** - 581 players, full 2025-26 regular season
-- **3D scene** - court, backboard, hoop, net, bleachers, instanced crowd (~590 heads)
+- **3D scene** - court, backboard, hoop, net, bleachers, instanced crowd (~650 heads)
 - **Per-shot animation** - parabolic arc, ribbon trail, floor markers, point light
 - **Landing effects** - rings on makes, bouncing ball and floor ripple on misses
 - **Crowd** - wave animation on made shots
-- **Zone stats** - PAINT / MID / 3PT FG% for the full season, unaffected by the filter
-- **Made/Missed filter** - toggles animation visibility only, not stats
-- **Player search** - typeahead over the full roster with keyboard navigation
+- **Filtered stats** - MADE / MISSED / FG%, plus PAINT / MID / 3PT FG% for the current shot filter
+- **Shot filters** - result, shot type, zone, and quarter
+- **Player picker** - roster search, team/position/height/stat filters, and sorting
 - **Team colors** - apron, crowd, and UI theme per player
 - **Speed** - 0.5x to 10x
+- **Progress** - scrub through the filtered shot sequence
+- **Arena toggle** - show or hide the surrounding arena
 - **Camera** - orbit, scroll to zoom, right-drag to pan
 
 ## Running locally
@@ -34,17 +38,26 @@ No npm, no build step. Three.js is loaded via CDN importmap.
 Data is pre-fetched and committed. To refresh or add players:
 
 ```bash
-# Refresh full roster
+# Refresh full roster and season totals
 python3 scripts/fetch_shots.py --roster
 
-# Fetch top-100 FGA leaders (~2 min)
+# Add roster height/position fields
+python3 scripts/fetch_shots.py --heights
+
+# Fetch top-100 FGA leaders
 python3 scripts/fetch_shots.py --top100
+
+# Fetch all remaining players without shot data
+python3 scripts/fetch_shots.py --all
+
+# Re-fetch shot files missing PERIOD / ACTION_TYPE / SHOT_DISTANCE
+python3 scripts/fetch_shots.py --upgrade
 
 # Single player by NBA Stats ID
 python3 scripts/fetch_shots.py --player 201939
 ```
 
-Run `--roster` first. Shot files land in `data/shots/{player_id}.js`.
+Run `--roster` first. `--heights` enriches the picker filters. Shot files land in `data/shots/{player_id}.js`.
 
 ## Deployment
 
