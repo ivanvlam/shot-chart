@@ -9,88 +9,121 @@
   <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet" />
   <style>
     :root {
-      --accent: #1d428a;
-      --accent-rgb: 29, 66, 138;
-      --card-bg: rgba(6, 8, 15, 0.92);
-      --card-border: rgba(255, 255, 255, 0.08);
-      --lbl: #888;
+      --accent: #5a7ba8;
+      --accent-rgb: 90, 123, 168;
+      --accent-text: #94a8c4;
+      --accent-glow: rgba(90, 123, 168, 0.35);
+      --bg: #080b13;
+      --card-bg: linear-gradient(180deg, rgba(18, 22, 32, 0.94) 0%, rgba(10, 13, 22, 0.96) 100%);
+      --card-bg-flat: rgba(12, 15, 24, 0.95);
+      --card-border: rgba(255, 255, 255, 0.06);
+      --card-border-hover: rgba(255, 255, 255, 0.12);
+      --card-highlight: rgba(255, 255, 255, 0.05);
+      --card-shadow: 0 10px 40px rgba(0, 0, 0, 0.55), 0 1px 0 var(--card-highlight) inset, 0 0 0 1px rgba(255, 255, 255, 0.025) inset;
+      --card-radius: 12px;
+      --lbl: rgba(255, 255, 255, 0.40);
+      --text: #e8eaf2;
+      --text-dim: rgba(255, 255, 255, 0.55);
+      --made: #3ddc6a;
+      --miss: #e04444;
+      --made-rgb: 61, 220, 106;
+      --miss-rgb: 224, 68, 68;
     }
 
     * { margin: 0; padding: 0; box-sizing: border-box; }
 
     body {
-      background: #0d1018;
-      color: #e8e8f0;
+      background: var(--bg);
+      color: var(--text);
       font-family: 'Space Grotesk', system-ui, sans-serif;
       overflow: hidden;
       height: 100vh;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
     }
 
     #canvas { display: block; width: 100vw; height: 100vh; }
 
-    /* ── Shared HUD card ────────────────────────────────────────── */
+    /* ── Card primitive ─────────────────────────────────────────── */
     .hud-card {
       position: fixed;
-      top: 16px;
+      top: 18px;
       display: flex;
-      align-items: center;
-      height: 72px;
+      align-items: stretch;
+      height: 74px;
       background: var(--card-bg);
-      backdrop-filter: blur(28px) saturate(1.6);
-      -webkit-backdrop-filter: blur(28px) saturate(1.6);
+      backdrop-filter: blur(32px) saturate(1.5);
+      -webkit-backdrop-filter: blur(32px) saturate(1.5);
       border: 1px solid var(--card-border);
-      border-radius: 18px;
+      border-radius: var(--card-radius);
+      box-shadow: var(--card-shadow);
       z-index: 10;
-      overflow: hidden;
     }
 
     .card-div {
       width: 1px;
-      height: 32px;
-      background: var(--card-border);
+      background: linear-gradient(180deg, transparent 18%, rgba(255,255,255,0.10) 50%, transparent 82%);
       flex-shrink: 0;
+      align-self: stretch;
     }
 
     /* ── Left card: branding + playback ────────────────────────── */
     #ctrl-left {
-      left: 16px;
-      border-left: 3px solid var(--accent);
-      gap: 0;
+      left: 18px;
+      padding-left: 2px;
+    }
+    #ctrl-left::before {
+      content: '';
+      position: absolute;
+      left: 0; top: 14px; bottom: 14px;
+      width: 3px;
+      background: var(--accent);
+      border-radius: 2px;
+      box-shadow: 0 0 10px var(--accent-glow);
+      transition: background 0.3s, box-shadow 0.3s;
     }
 
     #brand {
-      padding: 0 22px 0 18px;
+      padding: 0 22px 0 20px;
       display: flex;
       flex-direction: column;
       justify-content: center;
-      gap: 2px;
+      gap: 4px;
+      min-width: 0;
     }
-    #brand-top {
-      font-size: 11px;
-      font-weight: 700;
-      letter-spacing: 0.22em;
+    #brand-eyebrow {
+      font-size: 9.5px;
+      font-weight: 600;
+      letter-spacing: 0.24em;
       text-transform: uppercase;
-      color: var(--accent);
+      color: var(--accent-text);
       line-height: 1;
+      transition: color 0.3s;
     }
-    #brand-bot {
-      font-size: 16px;
+    #brand-title {
+      font-size: 17px;
       font-weight: 700;
-      letter-spacing: 0.08em;
+      letter-spacing: 0.04em;
       text-transform: uppercase;
       color: #fff;
       line-height: 1;
       white-space: nowrap;
     }
-    #brand-season {
+    #brand-player {
       font-size: 11px;
       font-weight: 600;
       letter-spacing: 0.10em;
-      color: rgba(255,255,255,0.45);
+      color: rgba(255,255,255,0.50);
       line-height: 1;
       white-space: nowrap;
-      margin-top: 3px;
+      text-transform: uppercase;
+      opacity: 0;
+      transition: opacity 0.3s;
+      max-width: 220px;
+      overflow: hidden;
+      text-overflow: ellipsis;
     }
+    #brand-player.visible { opacity: 1; }
 
     #playback {
       display: flex;
@@ -102,48 +135,48 @@
     #btnPlay {
       display: flex;
       align-items: center;
-      gap: 7px;
-      background: var(--accent);
-      border: none;
+      gap: 6px;
+      background: linear-gradient(180deg, rgba(var(--accent-rgb), 1) 0%, rgba(var(--accent-rgb), 0.85) 100%);
+      border: 1px solid rgba(255,255,255,0.10);
       color: #fff;
       font-family: 'Space Grotesk', sans-serif;
-      font-size: 13px;
+      font-size: 12.5px;
       font-weight: 700;
-      letter-spacing: 0.1em;
+      letter-spacing: 0.14em;
       text-transform: uppercase;
       padding: 0 22px;
-      height: 40px;
-      border-radius: 99px;
+      height: 38px;
+      border-radius: 8px;
       cursor: pointer;
       white-space: nowrap;
-      box-shadow: 0 0 18px rgba(var(--accent-rgb), 0.45);
-      transition: filter 0.15s, box-shadow 0.15s;
+      box-shadow: 0 4px 14px rgba(var(--accent-rgb), 0.35), 0 1px 0 rgba(255,255,255,0.18) inset;
+      transition: transform 0.12s ease, box-shadow 0.15s ease, filter 0.15s ease;
     }
-    #btnPlay:hover  { filter: brightness(1.18); box-shadow: 0 0 24px rgba(var(--accent-rgb), 0.6); }
-    #btnPlay:active { filter: brightness(0.9); }
+    #btnPlay:hover  { filter: brightness(1.10); box-shadow: 0 6px 20px rgba(var(--accent-rgb), 0.5), 0 1px 0 rgba(255,255,255,0.2) inset; }
+    #btnPlay:active { transform: translateY(1px); }
+    #btnPlay:disabled { opacity: 0.5; cursor: not-allowed; }
 
-    #btnReplay {
-      width: 36px;
-      height: 36px;
-      border-radius: 50%;
-      background: rgba(255,255,255,0.06);
-      border: 1px solid rgba(255,255,255,0.10);
+    .icon-btn {
+      width: 38px;
+      height: 38px;
+      border-radius: 8px;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.08);
       color: rgba(255,255,255,0.55);
-      font-size: 17px;
+      font-size: 16px;
+      font-weight: 600;
+      font-family: 'Space Grotesk', sans-serif;
       display: grid;
       place-items: center;
       cursor: pointer;
       padding: 0;
-      transition: background 0.15s, color 0.15s;
+      transition: background 0.15s, color 0.15s, border-color 0.15s;
     }
-    #btnReplay:hover  { background: rgba(255,255,255,0.12); color: #fff; }
-    #btnReplay:active { background: rgba(255,255,255,0.04); }
+    .icon-btn:hover  { background: rgba(255,255,255,0.08); border-color: rgba(255,255,255,0.16); color: #fff; }
+    .icon-btn:active { background: rgba(255,255,255,0.03); }
 
-    /* ── Right card: configuration ──────────────────────────────── */
-    #ctrl-right {
-      right: 16px;
-      gap: 0;
-    }
+    /* ── Right card ─────────────────────────────────────────────── */
+    #ctrl-right { right: 18px; }
 
     .cfg-sec {
       display: flex;
@@ -152,143 +185,145 @@
       gap: 6px;
       padding: 0 18px;
       height: 100%;
+      position: relative;
     }
+    .cfg-sec.clickable { cursor: pointer; }
+    .cfg-sec.clickable:hover .cfg-lbl { color: rgba(255,255,255,0.65); }
 
     .cfg-lbl {
-      font-size: 11px;
+      font-size: 9.5px;
       font-weight: 700;
-      letter-spacing: 0.16em;
+      letter-spacing: 0.20em;
       text-transform: uppercase;
-      color: rgba(255,255,255,0.55);
+      color: var(--lbl);
       line-height: 1;
+      transition: color 0.15s;
+    }
+    .cfg-lbl-row {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .cfg-lbl-row::after {
+      content: '⌄';
+      font-size: 10px;
+      color: rgba(255,255,255,0.30);
+      margin-top: -2px;
     }
 
-    /* Player combobox */
-    .player-combo {
-      position: relative;
-      min-width: 160px;
-      max-width: 210px;
-    }
-    #playerInput {
-      width: 100%;
-      background: transparent;
-      border: none;
-      color: #fff;
-      font-family: 'Space Grotesk', sans-serif;
-      font-size: 15px;
-      font-weight: 600;
-      outline: none;
-      cursor: pointer;
-      padding-right: 18px;
-      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='9' height='5' viewBox='0 0 9 5'%3E%3Cpath d='M0 0l4.5 5L9 0z' fill='%23888'/%3E%3C/svg%3E");
-      background-repeat: no-repeat;
-      background-position: right 2px center;
-    }
-    #playerInput::placeholder { color: rgba(255,255,255,0.35); font-weight: 500; }
-    #playerDropdown {
-      display: none;
-      position: fixed;
-      top: 88px;
-      right: 16px;
-      width: 220px;
-      max-height: 280px;
-      overflow-y: auto;
-      background: rgba(6, 8, 15, 0.97);
-      border: 1px solid rgba(255,255,255,0.12);
-      border-radius: 12px;
-      backdrop-filter: blur(24px);
-      -webkit-backdrop-filter: blur(24px);
-      z-index: 100;
-      padding: 4px 0;
-      scrollbar-width: thin;
-      scrollbar-color: rgba(255,255,255,0.15) transparent;
-    }
-    #playerDropdown.open { display: block; }
-    .player-opt {
-      padding: 7px 14px;
-      cursor: pointer;
+    .player-trigger {
       display: flex;
-      flex-direction: column;
-      gap: 1px;
+      align-items: center;
+      gap: 8px;
+      cursor: pointer;
+      min-width: 160px;
+      max-width: 220px;
     }
-    .player-opt:hover, .player-opt.focused {
-      background: rgba(255,255,255,0.07);
-    }
-    .player-opt-name {
-      font-size: 13px;
+    .player-trigger-name {
+      font-size: 14px;
       font-weight: 600;
-      color: #e8e8f0;
+      color: #fff;
+      letter-spacing: 0.01em;
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
     }
-    .player-opt-meta {
-      font-size: 10px;
-      font-weight: 500;
-      color: rgba(255,255,255,0.38);
-      letter-spacing: 0.04em;
+    .player-trigger.empty .player-trigger-name { color: rgba(255,255,255,0.40); font-weight: 500; }
+    .player-trigger-team {
+      font-size: 9.5px;
+      font-weight: 700;
+      letter-spacing: 0.10em;
+      color: var(--accent-text);
+      padding: 2px 6px;
+      border-radius: 4px;
+      background: rgba(var(--accent-rgb), 0.22);
+      border: 1px solid rgba(var(--accent-rgb), 0.45);
+      line-height: 1;
+      flex-shrink: 0;
     }
-    .player-opt.no-data .player-opt-name { color: rgba(255,255,255,0.35); }
-    .player-opt.no-data .player-opt-meta::after { content: ' · no data'; }
-    #playerDropdown::-webkit-scrollbar { width: 4px; }
-    #playerDropdown::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.15); border-radius: 2px; }
 
-    /* Made / Missed pill toggles */
-    .pill-group { display: flex; gap: 5px; }
+    /* Filter trigger */
+    .filter-trigger {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      cursor: pointer;
+    }
+    .filter-summary {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text);
+      white-space: nowrap;
+      letter-spacing: 0.01em;
+    }
+    .filter-count {
+      display: inline-block;
+      min-width: 16px;
+      padding: 2px 5px;
+      border-radius: 9px;
+      background: rgba(var(--accent-rgb), 0.20);
+      color: #fff;
+      font-size: 10px;
+      font-weight: 700;
+      text-align: center;
+      letter-spacing: 0.02em;
+    }
+    .filter-count.warn {
+      background: rgba(var(--miss-rgb), 0.25);
+      color: var(--miss);
+    }
+
+    /* Pill toggle (used for filters, speed) */
+    .pill-group { display: flex; gap: 4px; flex-wrap: wrap; }
 
     .pill-btn {
-      background: rgba(255,255,255,0.05);
-      border: 1px solid rgba(255,255,255,0.10);
-      color: rgba(255,255,255,0.28);
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.08);
+      color: rgba(255,255,255,0.36);
       font-family: 'Space Grotesk', sans-serif;
-      font-size: 12px;
+      font-size: 11.5px;
       font-weight: 700;
       letter-spacing: 0.08em;
       text-transform: uppercase;
-      padding: 4px 13px;
-      border-radius: 99px;
+      padding: 5px 11px;
+      border-radius: 6px;
       cursor: pointer;
       transition: background 0.15s, border-color 0.15s, color 0.15s;
       white-space: nowrap;
+      line-height: 1;
+    }
+    .pill-btn:hover { background: rgba(255,255,255,0.07); color: rgba(255,255,255,0.55); }
+    .pill-btn.active {
+      background: rgba(var(--accent-rgb), 0.20);
+      border-color: rgba(var(--accent-rgb), 0.55);
+      color: #fff;
     }
     .pill-btn.active-made {
-      background: rgba(61, 220, 106, 0.14);
-      border-color: rgba(61, 220, 106, 0.45);
-      color: #3ddc6a;
+      background: rgba(var(--made-rgb), 0.16);
+      border-color: rgba(var(--made-rgb), 0.50);
+      color: var(--made);
     }
     .pill-btn.active-miss {
-      background: rgba(224, 68, 68, 0.14);
-      border-color: rgba(224, 68, 68, 0.45);
-      color: #e04444;
+      background: rgba(var(--miss-rgb), 0.16);
+      border-color: rgba(var(--miss-rgb), 0.50);
+      color: var(--miss);
     }
-    .pill-btn:hover { opacity: 0.80; }
 
-    /* Speed select */
-    .speed-select {
-      appearance: none;
-      -webkit-appearance: none;
-      background: rgba(255,255,255,0.05) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='rgba(255,255,255,0.35)'/%3E%3C/svg%3E") no-repeat right 8px center;
-      border: 1px solid rgba(255,255,255,0.08);
-      border-radius: 8px;
-      color: rgba(255,255,255,0.85);
-      font-family: 'Space Grotesk', sans-serif;
-      font-size: 13px;
-      font-weight: 700;
-      letter-spacing: 0.04em;
-      padding: 6px 28px 6px 11px;
-      cursor: pointer;
-      width: 100%;
+    /* Speed pills (smaller) */
+    .speed-pills { display: flex; gap: 3px; }
+    .speed-pills .pill-btn {
+      padding: 5px 8px;
+      font-size: 11px;
+      letter-spacing: 0.03em;
     }
-    .speed-select:focus { outline: none; border-color: rgba(var(--accent-rgb), 0.6); }
-    .speed-select option { background: #1a2030; color: #fff; }
 
-    /* Arena toggle switch */
+    /* Arena toggle */
     .arena-wrap {
       display: flex;
       flex-direction: column;
       justify-content: center;
       align-items: center;
-      gap: 6px;
+      gap: 7px;
       padding: 0 18px;
       height: 100%;
       cursor: pointer;
@@ -305,8 +340,8 @@
       position: absolute;
       inset: 0;
       border-radius: 99px;
-      background: rgba(255,255,255,0.10);
-      border: 1px solid rgba(255,255,255,0.12);
+      background: rgba(255,255,255,0.08);
+      border: 1px solid rgba(255,255,255,0.10);
       transition: background 0.2s, border-color 0.2s;
       cursor: pointer;
     }
@@ -316,7 +351,7 @@
       width: 13px;
       height: 13px;
       border-radius: 50%;
-      background: rgba(255,255,255,0.38);
+      background: rgba(255,255,255,0.40);
       top: 2px;
       left: 2px;
       transition: transform 0.2s, background 0.2s;
@@ -330,28 +365,432 @@
       background: #fff;
     }
 
+    /* ── Filter panel (drops below right card) ──────────────────── */
+    #filter-panel {
+      position: fixed;
+      top: 102px;
+      right: 18px;
+      width: 360px;
+      background: var(--card-bg);
+      backdrop-filter: blur(32px) saturate(1.5);
+      -webkit-backdrop-filter: blur(32px) saturate(1.5);
+      border: 1px solid var(--card-border);
+      border-radius: var(--card-radius);
+      box-shadow: var(--card-shadow);
+      padding: 18px;
+      z-index: 9;
+      opacity: 0;
+      transform: translateY(-6px);
+      pointer-events: none;
+      transition: opacity 0.18s ease, transform 0.18s ease;
+    }
+    #filter-panel.open {
+      opacity: 1;
+      transform: translateY(0);
+      pointer-events: auto;
+    }
+    .filter-row {
+      display: grid;
+      grid-template-columns: 74px 1fr;
+      align-items: center;
+      gap: 12px;
+      padding: 9px 0;
+      border-bottom: 1px solid rgba(255,255,255,0.05);
+    }
+    .filter-row:last-of-type { border-bottom: none; }
+    .filter-row-lbl {
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--lbl);
+    }
+    #filter-warning {
+      margin-top: 10px;
+      padding: 8px 10px;
+      background: rgba(var(--miss-rgb), 0.10);
+      border: 1px solid rgba(var(--miss-rgb), 0.30);
+      border-radius: 6px;
+      font-size: 11px;
+      color: rgba(255,200,200,0.85);
+      letter-spacing: 0.02em;
+      display: none;
+    }
+    #filter-warning.show { display: block; }
+
+    #filter-actions {
+      display: flex;
+      gap: 8px;
+      margin-top: 14px;
+      padding-top: 14px;
+      border-top: 1px solid rgba(255,255,255,0.06);
+    }
+    .fp-action {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      padding: 9px 14px;
+      border-radius: 7px;
+      cursor: pointer;
+      transition: background 0.15s, border-color 0.15s, color 0.15s, opacity 0.15s, box-shadow 0.15s;
+    }
+    .fp-action-ghost {
+      flex: 0 0 auto;
+      background: transparent;
+      border: 1px solid rgba(255,255,255,0.10);
+      color: rgba(255,255,255,0.55);
+    }
+    .fp-action-ghost:hover {
+      background: rgba(255,255,255,0.05);
+      border-color: rgba(255,255,255,0.18);
+      color: #fff;
+    }
+    .fp-action-primary {
+      flex: 1;
+      background: linear-gradient(180deg, rgba(var(--accent-rgb), 1) 0%, rgba(var(--accent-rgb), 0.85) 100%);
+      border: 1px solid rgba(255,255,255,0.10);
+      color: #fff;
+      box-shadow: 0 3px 10px rgba(var(--accent-rgb), 0.30), 0 1px 0 rgba(255,255,255,0.15) inset;
+    }
+    .fp-action-primary:not(:disabled):hover {
+      filter: brightness(1.10);
+      box-shadow: 0 5px 16px rgba(var(--accent-rgb), 0.45), 0 1px 0 rgba(255,255,255,0.18) inset;
+    }
+    .fp-action-primary:disabled {
+      background: rgba(255,255,255,0.03);
+      border-color: rgba(255,255,255,0.06);
+      color: rgba(255,255,255,0.25);
+      box-shadow: none;
+      cursor: not-allowed;
+    }
+
+    /* Pending-changes indicator on the filter trigger */
+    #filter-trigger-sec.pending .filter-count {
+      background: rgba(var(--accent-rgb), 0.45);
+      box-shadow: 0 0 0 2px rgba(var(--accent-rgb), 0.22);
+    }
+
+    /* ── Player picker (welcome screen) ─────────────────────────── */
+    #picker {
+      position: fixed;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 60;
+      background: rgba(8, 11, 19, 0.55);
+      backdrop-filter: blur(14px) saturate(1.3);
+      -webkit-backdrop-filter: blur(14px) saturate(1.3);
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.35s ease;
+    }
+    #picker.visible {
+      opacity: 1;
+      pointer-events: auto;
+    }
+    #picker.hidden { display: none; }
+    #picker-card {
+      transform: scale(0.97);
+      transition: transform 0.35s ease;
+    }
+    #picker.visible #picker-card { transform: scale(1); }
+
+    #picker-card {
+      width: min(960px, calc(100vw - 36px));
+      max-height: calc(100vh - 80px);
+      background: var(--card-bg);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 16px;
+      box-shadow: 0 30px 80px rgba(0,0,0,0.55), 0 1px 0 var(--card-highlight) inset;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      transition: height 0.28s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    #picker-results { transition: opacity 0.18s ease; }
+    #picker-results.fading { opacity: 0; }
+    #picker-header {
+      padding: 22px 28px 14px;
+      border-bottom: 1px solid var(--card-border);
+    }
+    #picker-header-top {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 18px;
+    }
+    #picker-heading {
+      min-width: 0;
+    }
+    #picker-repo-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      flex-shrink: 0;
+      padding: 7px 10px;
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 7px;
+      color: rgba(255,255,255,0.68);
+      background: rgba(255,255,255,0.035);
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.10em;
+      line-height: 1;
+      text-decoration: none;
+      text-transform: uppercase;
+      transition: background 0.15s, border-color 0.15s, color 0.15s;
+    }
+    #picker-repo-link:hover {
+      background: rgba(255,255,255,0.07);
+      border-color: rgba(255,255,255,0.16);
+      color: #fff;
+    }
+    #picker-repo-link svg {
+      width: 15px;
+      height: 15px;
+      fill: currentColor;
+      flex-shrink: 0;
+    }
+    #picker-eyebrow {
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: 0.28em;
+      text-transform: uppercase;
+      color: var(--accent-text);
+      line-height: 1;
+      margin-bottom: 8px;
+    }
+    #picker-title {
+      font-size: 24px;
+      font-weight: 700;
+      letter-spacing: 0.02em;
+      color: #fff;
+      line-height: 1.1;
+    }
+    #picker-subtitle {
+      font-size: 12px;
+      font-weight: 500;
+      color: rgba(255,255,255,0.50);
+      margin-top: 6px;
+      letter-spacing: 0.04em;
+    }
+
+    #picker-search-wrap {
+      position: relative;
+      padding: 14px 28px 10px;
+      border-bottom: 1px solid var(--card-border);
+    }
+    #picker-search {
+      width: 100%;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 10px;
+      padding: 11px 14px 11px 38px;
+      color: #fff;
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 14px;
+      font-weight: 500;
+      outline: none;
+      transition: border-color 0.15s, background 0.15s;
+    }
+    #picker-search:focus { border-color: rgba(var(--accent-rgb), 0.55); background: rgba(255,255,255,0.06); }
+    #picker-search::placeholder { color: rgba(255,255,255,0.30); }
+    #picker-search-icon {
+      position: absolute;
+      left: 42px;
+      top: 50%;
+      transform: translateY(-50%);
+      font-size: 14px;
+      color: rgba(255,255,255,0.35);
+      pointer-events: none;
+    }
+
+    #picker-filters {
+      display: flex;
+      gap: 10px;
+      padding: 12px 28px;
+      flex-wrap: wrap;
+      border-bottom: 1px solid var(--card-border);
+    }
+    .pf-group {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .pf-lbl {
+      font-size: 9.5px;
+      font-weight: 700;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      color: rgba(255,255,255,0.40);
+    }
+    .pf-select {
+      appearance: none;
+      -webkit-appearance: none;
+      background: rgba(255,255,255,0.04) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='rgba(255,255,255,0.45)'/%3E%3C/svg%3E") no-repeat right 9px center;
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 6px;
+      color: rgba(255,255,255,0.85);
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: 0.02em;
+      padding: 6px 26px 6px 10px;
+      cursor: pointer;
+      transition: border-color 0.15s, background-color 0.15s;
+    }
+    .pf-select:hover  { background-color: rgba(255,255,255,0.07); border-color: rgba(255,255,255,0.16); }
+    .pf-select:focus  { outline: none; border-color: rgba(var(--accent-rgb), 0.6); }
+    .pf-select option { background: #11151f; color: #fff; }
+
+    #picker-results {
+      padding: 16px 24px 24px;
+      overflow-y: auto;
+      flex: 1;
+      min-height: 200px;
+      scrollbar-width: thin;
+      scrollbar-color: rgba(255,255,255,0.15) transparent;
+    }
+    #picker-results::-webkit-scrollbar { width: 6px; }
+    #picker-results::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.15); border-radius: 3px; }
+
+    #picker-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+      gap: 10px;
+    }
+
+    .pp-card {
+      background: rgba(255,255,255,0.025);
+      border: 1px solid rgba(255,255,255,0.06);
+      border-radius: 10px;
+      padding: 13px 14px;
+      cursor: pointer;
+      transition: background 0.15s, border-color 0.15s, transform 0.1s;
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+      animation: ppCardIn 0.20s ease-out both;
+      content-visibility: auto;
+      contain-intrinsic-size: 74px;
+    }
+    @keyframes ppCardIn {
+      from { opacity: 0; transform: translateY(4px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    .pp-card:hover {
+      background: rgba(255,255,255,0.05);
+      border-color: rgba(255,255,255,0.14);
+      transform: translateY(-1px);
+    }
+    .pp-card.no-data {
+      opacity: 0.40;
+      cursor: not-allowed;
+    }
+    .pp-card.no-data:hover { transform: none; }
+
+    .pp-card-team-row {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 9.5px;
+      font-weight: 700;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+    }
+    .pp-team-dot {
+      width: 8px; height: 8px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+    .pp-team-abbr { color: rgba(255,255,255,0.55); }
+    .pp-pos-tag {
+      margin-left: auto;
+      font-size: 9px;
+      color: rgba(255,255,255,0.40);
+      letter-spacing: 0.10em;
+    }
+
+    .pp-card-name {
+      font-size: 14px;
+      font-weight: 700;
+      color: #fff;
+      line-height: 1.15;
+      letter-spacing: 0.005em;
+    }
+
+    .pp-card-stats {
+      display: flex;
+      gap: 11px;
+      margin-top: 3px;
+    }
+    .pp-stat {
+      display: flex;
+      flex-direction: column;
+      gap: 1px;
+    }
+    .pp-stat-v {
+      font-family: 'DM Mono', monospace;
+      font-size: 13px;
+      font-weight: 500;
+      color: #fff;
+      line-height: 1;
+      font-variant-numeric: tabular-nums;
+    }
+    .pp-stat-l {
+      font-size: 8.5px;
+      font-weight: 700;
+      letter-spacing: 0.10em;
+      text-transform: uppercase;
+      color: rgba(255,255,255,0.35);
+    }
+
+    #picker-empty {
+      padding: 40px 20px;
+      text-align: center;
+      color: rgba(255,255,255,0.40);
+      font-size: 13px;
+      letter-spacing: 0.04em;
+      display: none;
+    }
+    #picker-empty.show { display: block; }
+    #picker-count {
+      padding: 10px 28px 0;
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: rgba(255,255,255,0.35);
+    }
+
     /* ── Bottom stats ────────────────────────────────────────────── */
     #stats {
       position: fixed;
-      bottom: 22px;
+      bottom: 24px;
       left: 50%;
       transform: translateX(-50%);
       display: flex;
       align-items: stretch;
       background: var(--card-bg);
-      backdrop-filter: blur(28px) saturate(1.6);
-      -webkit-backdrop-filter: blur(28px) saturate(1.6);
+      backdrop-filter: blur(32px) saturate(1.5);
+      -webkit-backdrop-filter: blur(32px) saturate(1.5);
       border: 1px solid var(--card-border);
-      border-radius: 16px;
+      border-radius: var(--card-radius);
+      box-shadow: var(--card-shadow);
       overflow: hidden;
       z-index: 10;
     }
+    #stats.hidden { display: none; }
     .stat-side {
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      padding: 18px 32px;
+      padding: 18px 30px;
       text-align: center;
     }
     .stat-side:first-child { border-right: 1px solid var(--card-border); }
@@ -361,7 +800,7 @@
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      padding: 14px 24px;
+      padding: 14px 22px;
       text-align: center;
     }
     .stat-pct { padding-bottom: 10px; }
@@ -373,217 +812,242 @@
     }
     .stat-zone-cell {
       text-align: center;
-      padding: 0 16px;
+      padding: 0 14px;
     }
     .stat-zone-cell + .stat-zone-cell { border-left: 1px solid var(--card-border); }
     .stat-val {
       font-family: 'DM Mono', monospace;
-      font-size: 34px;
+      font-size: 32px;
       font-weight: 500;
       color: #fff;
       line-height: 1;
       letter-spacing: -0.02em;
       font-variant-numeric: tabular-nums;
-      min-width: 4ch;
+      width: 4.5ch;
+      text-align: center;
       display: block;
     }
     .stat-lbl {
       font-family: 'Space Grotesk', sans-serif;
       font-size: 9px;
       font-weight: 700;
-      letter-spacing: 0.18em;
+      letter-spacing: 0.20em;
       text-transform: uppercase;
-      color: #888;
-      margin-top: 4px;
+      color: rgba(255,255,255,0.45);
+      margin-top: 5px;
     }
-    .stat-made .stat-val { color: #3ddc6a; }
-    .stat-miss .stat-val { color: #e04444; }
-    #statPct { color: #a8c4ff; }
+    .stat-made .stat-val { color: var(--made); }
+    .stat-miss .stat-val { color: var(--miss); }
+    #statPct { color: #fff; }
     .stat-zone-val {
       font-family: 'DM Mono', monospace;
-      font-size: 19px;
+      font-size: 17px;
       font-weight: 500;
-      color: #c8d8ff;
+      color: rgba(255,255,255,0.80);
       line-height: 1;
       letter-spacing: -0.02em;
       font-variant-numeric: tabular-nums;
-      min-width: 4ch;
+      width: 4ch;
+      text-align: center;
       display: block;
     }
 
-    /* ── Instructions overlay ───────────────────────────────────── */
-    #instructions {
-      position: fixed;
-      inset: 0;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      z-index: 50;
-      pointer-events: auto;
-    }
-    #instructions.fade-out {
+    /* Progress bar — small pill below the left card, lined up with its width */
+    #progress-track {
+      position: absolute;
+      left: 0; right: 0;
+      top: 100%;
+      margin-top: 8px;
+      height: 5px;
+      background: rgba(12, 15, 24, 0.92);
+      border: 1px solid var(--card-border);
+      border-radius: 99px;
+      box-shadow: 0 4px 14px rgba(0, 0, 0, 0.4);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      z-index: 11;
+      transition: height 0.15s ease, margin-top 0.15s ease;
+      cursor: pointer;
       opacity: 0;
-      transition: opacity 0.7s ease;
+      transition: opacity 0.3s, height 0.15s ease;
+    }
+    #progress-track.show { opacity: 1; }
+    #progress-bar {
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(90deg, rgba(var(--accent-rgb), 0.85), rgba(255,255,255,0.95));
+      box-shadow: 0 0 8px rgba(var(--accent-rgb), 0.6);
+      transition: width 0.10s linear;
       pointer-events: none;
     }
-    #instructions.hidden { display: none; }
-
-    #instr-card {
-      background: var(--card-bg);
-      backdrop-filter: blur(28px) saturate(1.6);
-      -webkit-backdrop-filter: blur(28px) saturate(1.6);
-      border: 1px solid var(--card-border);
-      border-left: 3px solid var(--accent);
-      border-radius: 18px;
-      padding: 28px 36px;
-      display: flex;
-      flex-direction: column;
-      gap: 18px;
-      min-width: 320px;
-    }
-    #instr-title {
-      font-size: 11px;
-      font-weight: 700;
-      letter-spacing: 0.22em;
-      text-transform: uppercase;
-      color: var(--accent);
-    }
-    .instr-row {
-      display: flex;
-      gap: 16px;
-      align-items: baseline;
-    }
-    .instr-key {
-      font-size: 11px;
-      font-weight: 700;
-      letter-spacing: 0.14em;
-      text-transform: uppercase;
-      color: rgba(255,255,255,0.45);
-      width: 64px;
-      flex-shrink: 0;
-    }
-    .instr-val {
-      font-size: 13px;
-      font-weight: 500;
-      color: rgba(255,255,255,0.80);
-      line-height: 1.5;
-    }
-    #instr-dismiss {
-      margin-top: 4px;
-      font-size: 11px;
-      font-weight: 500;
-      letter-spacing: 0.06em;
-      color: rgba(255,255,255,0.28);
-      text-align: center;
-    }
-
-    /* ── Help button ─────────────────────────────────────────────── */
-    #btnHelp {
-      width: 36px;
-      height: 36px;
+    #progress-thumb {
+      position: absolute;
+      top: 50%;
+      left: 0%;
+      width: 12px;
+      height: 12px;
+      background: #fff;
       border-radius: 50%;
-      background: rgba(255,255,255,0.06);
-      border: 1px solid rgba(255,255,255,0.10);
-      color: rgba(255,255,255,0.55);
-      font-size: 15px;
-      font-weight: 700;
-      font-family: 'Space Grotesk', sans-serif;
-      display: grid;
-      place-items: center;
-      cursor: pointer;
-      padding: 0;
-      transition: background 0.15s, color 0.15s;
+      transform: translate(-50%, -50%);
+      box-shadow: 0 0 0 3px rgba(var(--accent-rgb), 0.35), 0 2px 8px rgba(0,0,0,0.5);
+      opacity: 0;
+      transition: opacity 0.15s, transform 0.10s linear;
+      pointer-events: none;
     }
-    #btnHelp:hover  { background: rgba(255,255,255,0.12); color: #fff; }
-    #btnHelp:active { background: rgba(255,255,255,0.04); }
+    @media (min-width: 721px) {
+      #progress-track:hover,
+      #progress-track.dragging { height: 8px; }
+      #progress-track:hover #progress-thumb,
+      #progress-track.dragging #progress-thumb { opacity: 1; }
+    }
+    @media (max-width: 720px) {
+      #progress-track { height: 2px; cursor: default; }
+      #progress-thumb { display: none; }
+    }
+
+    /* Canvas transition overlay (player switch) */
+    #transition-overlay {
+      position: fixed;
+      inset: 0;
+      background: #000;
+      opacity: 0;
+      pointer-events: none;
+      z-index: 5;
+      transition: opacity 0.2s ease;
+    }
+    #transition-overlay.show { opacity: 0.45; }
+
+    /* Loading pulse on player trigger */
+    @keyframes shimmerPulse {
+      0%, 100% { opacity: 0.6; }
+      50% { opacity: 1; }
+    }
+    .player-trigger.loading .player-trigger-name { animation: shimmerPulse 1.0s ease-in-out infinite; }
+
+    /* ── Entrance animations ─────────────────────────────────────── */
+    @keyframes fadeInLeft  { from { opacity: 0; } to { opacity: 1; } }
+    @keyframes fadeInRight { from { opacity: 0; } to { opacity: 1; } }
+    @keyframes fadeInUp    { from { opacity: 0; } to { opacity: 1; } }
+
+    .anim-left  { animation: fadeInLeft  0.4s ease-out 0.05s both; }
+    .anim-right { animation: fadeInRight 0.4s ease-out 0.10s both; }
+    .anim-up    { animation: fadeInUp    0.4s ease-out 0.15s both; }
 
     /* ── Mobile layout ───────────────────────────────────────────── */
-    @media (max-width: 640px) {
-      .hud-card { height: 54px; border-radius: 12px; }
+    @media (max-width: 720px) {
+      .hud-card { height: 56px; border-radius: 10px; }
 
-      #ctrl-left { left: 8px; right: 8px; top: 8px; justify-content: center; }
-      #brand { padding: 0 12px; }
-      #brand-season { display: none; }
-      #brand-bot { font-size: 14px; }
-      #brand-top { font-size: 10px; }
-      #playback { padding: 0 10px; gap: 6px; }
-      #btnPlay { padding: 0 14px; height: 34px; font-size: 12px; }
+      #ctrl-left { left: 10px; right: 10px; top: 10px; justify-content: center; padding-left: 4px; }
+      #ctrl-left::before { left: 0; top: 10px; bottom: 10px; }
+      #brand { padding: 0 14px; gap: 3px; }
+      #brand-eyebrow { font-size: 8.5px; }
+      #brand-title { font-size: 14px; }
+      #brand-player { font-size: 9.5px; }
+
+      #playback { padding: 0 12px; gap: 6px; }
+      #btnPlay { padding: 0 14px; height: 32px; font-size: 11px; letter-spacing: 0.10em; }
+      .icon-btn { width: 32px; height: 32px; font-size: 14px; }
 
       #ctrl-right {
-        left: 8px; right: 8px; top: 70px;
+        left: 10px; right: 10px; top: 76px;
         overflow-x: auto; overflow-y: hidden;
         -webkit-overflow-scrolling: touch;
-        justify-content: center;
+        justify-content: flex-start;
       }
-      .cfg-sec { padding: 0 12px; gap: 3px; flex-shrink: 0; }
-      .cfg-lbl { font-size: 9px; }
-      .player-combo { min-width: 110px; max-width: 130px; }
-      #playerInput { font-size: 13px; }
-      .pill-btn { padding: 3px 9px; font-size: 11px; }
-      .speed-select { font-size: 12px; padding: 4px 22px 4px 8px; }
+      .cfg-sec { padding: 0 12px; gap: 4px; flex-shrink: 0; }
+      .cfg-lbl { font-size: 8.5px; }
+      .player-trigger { min-width: 100px; max-width: 130px; }
+      .player-trigger-name { font-size: 12px; }
+      .filter-summary { font-size: 11px; }
+      .pill-btn { padding: 3px 8px; font-size: 10px; }
+      .speed-pills .pill-btn { padding: 3px 6px; font-size: 10px; }
       .arena-wrap { padding: 0 12px; flex-shrink: 0; }
 
-      #stats {
-        left: 8px; right: 8px; bottom: 8px;
-        transform: none;
-        justify-content: center;
+      #filter-panel {
+        left: 10px; right: 10px; top: 142px;
+        width: auto;
       }
-      .stat-side { padding: 10px 18px; }
-      .stat-mid { padding: 10px 14px; }
-      .stat-val { font-size: 24px; }
-      .stat-zones { display: none; }
+      .filter-row { grid-template-columns: 60px 1fr; gap: 8px; padding: 7px 0; }
 
-      #playerDropdown { left: 8px; right: 8px; width: auto; top: 132px; }
+      #stats {
+        left: 10px; right: 10px; bottom: 10px;
+        transform: none;
+      }
+      .stat-side { padding: 9px 14px; }
+      .stat-mid { padding: 9px 12px; }
+      .stat-val { font-size: 22px; width: 4.5ch; }
+      .stat-zone-cell { padding: 0 9px; }
+      .stat-zone-val { font-size: 13px; }
+      .stat-lbl { font-size: 8px; letter-spacing: 0.16em; }
 
-      #instr-card { min-width: auto; width: calc(100vw - 32px); padding: 20px 22px; gap: 12px; }
+
+      #picker-card { width: calc(100vw - 20px); border-radius: 12px; }
+      #picker-header { padding: 18px 18px 12px; }
+      #picker-header-top { flex-direction: column; gap: 12px; }
+      #picker-repo-link { align-self: flex-start; padding: 6px 9px; font-size: 10px; }
+      #picker-title { font-size: 20px; }
+      #picker-search-wrap { padding: 12px 18px 8px; }
+      #picker-search-icon { left: 32px; }
+      #picker-filters { padding: 10px 18px; gap: 8px; }
+      .pf-select { font-size: 11px; padding: 5px 22px 5px 8px; }
+      #picker-results { padding: 12px 14px 16px; }
+      #picker-grid { grid-template-columns: repeat(2, 1fr); gap: 8px; }
+      .pp-card { padding: 10px 11px; }
+      .pp-card-name { font-size: 12.5px; }
+      .pp-stat-v { font-size: 12px; }
     }
   </style>
 </head>
 <body>
 
 <canvas id="canvas"></canvas>
+<div id="transition-overlay"></div>
 
 <!-- Left HUD: branding + playback -->
-<div id="ctrl-left" class="hud-card">
+<div id="ctrl-left" class="hud-card anim-left">
   <div id="brand">
-    <div id="brand-top">NBA</div>
-    <div id="brand-bot">Shot Chart 3D</div>
-    <div id="brand-season">2025–26 Regular Season</div>
+    <div id="brand-eyebrow">NBA · 2025–26 SEASON</div>
+    <div id="brand-title">Shot Chart 3D</div>
+    <div id="brand-player"></div>
   </div>
   <div class="card-div"></div>
   <div id="playback">
-    <button id="btnPlay">⏸ Pause</button>
-    <button id="btnReplay" title="Replay">&#8635;</button>
-    <button id="btnHelp" title="Help">?</button>
+    <button id="btnPlay" aria-label="Play">▶ Play</button>
+    <button id="btnReplay" class="icon-btn" title="Replay" aria-label="Replay">↺</button>
+  </div>
+  <div id="progress-track">
+    <div id="progress-bar"></div>
+    <div id="progress-thumb"></div>
   </div>
 </div>
 
 <!-- Right HUD: configuration -->
-<div id="ctrl-right" class="hud-card">
-  <div class="cfg-sec">
-    <span class="cfg-lbl">Player</span>
-    <div class="player-combo">
-      <input id="playerInput" type="text" autocomplete="off" spellcheck="false" placeholder="Search player…" />
+<div id="ctrl-right" class="hud-card anim-right">
+  <div class="cfg-sec clickable" id="player-trigger-sec">
+    <span class="cfg-lbl cfg-lbl-row">Player</span>
+    <div class="player-trigger empty" id="player-trigger">
+      <span class="player-trigger-name" id="player-trigger-name">Select player</span>
+      <span class="player-trigger-team" id="player-trigger-team" style="display:none"></span>
     </div>
   </div>
   <div class="card-div"></div>
-  <div class="cfg-sec">
-    <span class="cfg-lbl">Filter</span>
-    <div class="pill-group">
-      <button class="pill-btn active-made" id="btnMade">Made</button>
-      <button class="pill-btn active-miss" id="btnMiss">Missed</button>
+  <div class="cfg-sec clickable" id="filter-trigger-sec">
+    <span class="cfg-lbl cfg-lbl-row">Filter</span>
+    <div class="filter-trigger">
+      <span class="filter-summary" id="filter-summary">All shots</span>
+      <span class="filter-count" id="filter-count">5</span>
     </div>
   </div>
   <div class="card-div"></div>
   <div class="cfg-sec">
     <span class="cfg-lbl">Speed</span>
-    <select id="speedSelect" class="speed-select">
-      <option value="0.5">0.5×</option>
-      <option value="1" selected>1×</option>
-      <option value="2">2×</option>
-      <option value="5">5×</option>
-      <option value="10">10×</option>
-    </select>
+    <div class="speed-pills" id="speed-pills">
+      <button class="pill-btn" data-speed="0.5">0.5×</button>
+      <button class="pill-btn active" data-speed="1">1×</button>
+      <button class="pill-btn" data-speed="2">2×</button>
+      <button class="pill-btn" data-speed="5">5×</button>
+      <button class="pill-btn" data-speed="10">10×</button>
+    </div>
   </div>
   <div class="card-div"></div>
   <label class="arena-wrap">
@@ -595,12 +1059,52 @@
   </label>
 </div>
 
-<div id="playerDropdown"></div>
+<!-- Filter panel: drops below right card -->
+<div id="filter-panel">
+  <div class="filter-row">
+    <span class="filter-row-lbl">Result</span>
+    <div class="pill-group" data-filter-group="result">
+      <button class="pill-btn active active-made" data-result="made">Made</button>
+      <button class="pill-btn active active-miss" data-result="miss">Missed</button>
+    </div>
+  </div>
+  <div class="filter-row">
+    <span class="filter-row-lbl">Type</span>
+    <div class="pill-group" data-filter-group="type">
+      <button class="pill-btn active" data-type="2PT">2PT</button>
+      <button class="pill-btn active" data-type="3PT">3PT</button>
+    </div>
+  </div>
+  <div class="filter-row">
+    <span class="filter-row-lbl">Zone</span>
+    <div class="pill-group" data-filter-group="zone">
+      <button class="pill-btn active" data-zone="paint">Paint</button>
+      <button class="pill-btn active" data-zone="mid">Mid</button>
+      <button class="pill-btn active" data-zone="three">3PT</button>
+    </div>
+  </div>
+  <div class="filter-row">
+    <span class="filter-row-lbl">Quarter</span>
+    <div class="pill-group" data-filter-group="period">
+      <button class="pill-btn active" data-period="1">Q1</button>
+      <button class="pill-btn active" data-period="2">Q2</button>
+      <button class="pill-btn active" data-period="3">Q3</button>
+      <button class="pill-btn active" data-period="4">Q4</button>
+      <button class="pill-btn active" data-period="5">OT</button>
+    </div>
+  </div>
+  <div id="filter-warning">No shots match the current filters.</div>
+  <div id="filter-actions">
+    <button id="filter-reset" class="fp-action fp-action-ghost">Reset</button>
+    <button id="filter-apply" class="fp-action fp-action-primary" disabled>Apply</button>
+  </div>
+</div>
 
-<div id="stats">
+<!-- Stats footer -->
+<div id="stats" class="hidden anim-up">
   <div class="stat-side stat-made">
     <div class="stat-val" id="statMadeN">0</div>
-    <div class="stat-lbl">MADE</div>
+    <div class="stat-lbl">Made</div>
   </div>
   <div class="stat-mid">
     <div class="stat-pct">
@@ -610,11 +1114,11 @@
     <div class="stat-zones">
       <div class="stat-zone-cell">
         <div class="stat-zone-val" id="statPaintPct">—</div>
-        <div class="stat-lbl">PAINT</div>
+        <div class="stat-lbl">Paint</div>
       </div>
       <div class="stat-zone-cell">
         <div class="stat-zone-val" id="statMidPct">—</div>
-        <div class="stat-lbl">MID</div>
+        <div class="stat-lbl">Mid</div>
       </div>
       <div class="stat-zone-cell">
         <div class="stat-zone-val" id="statThreePct">—</div>
@@ -624,30 +1128,94 @@
   </div>
   <div class="stat-side stat-miss">
     <div class="stat-val" id="statMissN">0</div>
-    <div class="stat-lbl">MISSED</div>
+    <div class="stat-lbl">Missed</div>
   </div>
 </div>
 
-<div id="instructions">
-  <div id="instr-card">
-    <div id="instr-title">How to use</div>
-    <div class="instr-row">
-      <span class="instr-key">Navigate</span>
-      <span class="instr-val">Drag to rotate &nbsp;·&nbsp; Scroll / pinch to zoom &nbsp;·&nbsp; Two-finger drag to pan</span>
+<!-- Player picker / welcome screen -->
+<div id="picker">
+  <div id="picker-card">
+    <div id="picker-header">
+      <div id="picker-header-top">
+        <div id="picker-heading">
+          <div id="picker-eyebrow">NBA · 2025–26 Regular Season</div>
+          <div id="picker-title">Choose a player</div>
+          <div id="picker-subtitle">Browse shot charts for every player from the season.</div>
+        </div>
+        <a id="picker-repo-link" href="https://github.com/ivanvlam/shot-chart" target="_blank" rel="noopener noreferrer" aria-label="Open GitHub repository">
+          <svg viewBox="0 0 16 16" aria-hidden="true">
+            <path d="M8 0C3.58 0 0 3.67 0 8.2c0 3.62 2.29 6.69 5.47 7.78.4.08.55-.18.55-.4 0-.2-.01-.85-.01-1.54-2.01.38-2.53-.5-2.69-.96-.09-.24-.48-.96-.82-1.15-.28-.15-.68-.52-.01-.53.63-.01 1.08.59 1.23.84.72 1.24 1.87.89 2.33.68.07-.53.28-.89.51-1.09-1.78-.21-3.64-.91-3.64-4.05 0-.89.31-1.63.82-2.2-.08-.21-.36-1.04.08-2.17 0 0 .67-.22 2.2.84A7.4 7.4 0 0 1 8 3.98c.68 0 1.36.09 2 .27 1.53-1.06 2.2-.84 2.2-.84.44 1.13.16 1.96.08 2.17.51.57.82 1.3.82 2.2 0 3.15-1.87 3.84-3.65 4.05.29.25.54.75.54 1.52 0 1.09-.01 1.97-.01 2.24 0 .22.15.48.55.4A8.08 8.08 0 0 0 16 8.2C16 3.67 12.42 0 8 0Z"/>
+          </svg>
+          GitHub
+        </a>
+      </div>
     </div>
-    <div class="instr-row">
-      <span class="instr-key">Player</span>
-      <span class="instr-val">Search by name - top right</span>
+    <div id="picker-search-wrap">
+      <span id="picker-search-icon">⌕</span>
+      <input id="picker-search" type="text" autocomplete="off" spellcheck="false" placeholder="Search by name…" />
     </div>
-    <div class="instr-row">
-      <span class="instr-key">Filter</span>
-      <span class="instr-val">Toggle Made / Missed shots</span>
+    <div id="picker-filters">
+      <div class="pf-group">
+        <span class="pf-lbl">Team</span>
+        <select id="pf-team" class="pf-select"></select>
+      </div>
+      <div class="pf-group">
+        <span class="pf-lbl">Pos</span>
+        <select id="pf-pos" class="pf-select">
+          <option value="">All</option>
+          <option value="G">Guards</option>
+          <option value="F">Forwards</option>
+          <option value="C">Centers</option>
+        </select>
+      </div>
+      <div class="pf-group">
+        <span class="pf-lbl">Height</span>
+        <select id="pf-height" class="pf-select"></select>
+      </div>
+      <div class="pf-group">
+        <span class="pf-lbl">FGA</span>
+        <select id="pf-fga" class="pf-select">
+          <option value="0">All</option>
+          <option value="200">&gt; 200</option>
+          <option value="500">&gt; 500</option>
+          <option value="800">&gt; 800</option>
+          <option value="1000">&gt; 1000</option>
+        </select>
+      </div>
+      <div class="pf-group">
+        <span class="pf-lbl">FG%</span>
+        <select id="pf-fgpct" class="pf-select">
+          <option value="0">All</option>
+          <option value="0.40">&gt; 40%</option>
+          <option value="0.45">&gt; 45%</option>
+          <option value="0.50">&gt; 50%</option>
+        </select>
+      </div>
+      <div class="pf-group">
+        <span class="pf-lbl">PTS</span>
+        <select id="pf-pts" class="pf-select">
+          <option value="0">All</option>
+          <option value="500">&gt; 500</option>
+          <option value="1000">&gt; 1000</option>
+          <option value="1500">&gt; 1500</option>
+        </select>
+      </div>
+      <div class="pf-group">
+        <span class="pf-lbl">Sort</span>
+        <select id="pf-sort" class="pf-select">
+          <option value="pts">PTS ↓</option>
+          <option value="fga">FGA ↓</option>
+          <option value="fg_pct">FG% ↓</option>
+          <option value="name">Name A–Z</option>
+          <option value="height_in">Tallest</option>
+        </select>
+      </div>
     </div>
-    <div class="instr-row">
-      <span class="instr-key">Speed</span>
-      <span class="instr-val">Control animation speed</span>
+    <div id="picker-count"></div>
+    <div id="picker-results">
+      <div id="picker-grid"></div>
+      <div id="picker-empty">No players match the current filters.</div>
     </div>
-    <div id="instr-dismiss">Tap or click anywhere to dismiss</div>
   </div>
 </div>
 
@@ -682,6 +1250,7 @@ import { ROSTER } from './data/roster.js';
 let RAW_SHOTS = [];
 const shotCache = new Map();   // player id → shot array
 let currentPlayer = null;
+let playerLoadToken = 0;
 
 const CROWD_COUNT = 720;
 let arenaGroup = null;
@@ -715,24 +1284,32 @@ function shotToFloor(locX, locY) {
 // Renderer / Scene / Camera
 // ---------------------------------------------------------------------------
 const canvas = document.getElementById('canvas');
-const renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
-renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-renderer.setSize(window.innerWidth, window.innerHeight);
-renderer.shadowMap.enabled = true;
-renderer.shadowMap.type = THREE.PCFSoftShadowMap;
-renderer.toneMapping = THREE.ACESFilmicToneMapping;
-renderer.toneMappingExposure = 2.2;
+let renderer;
+try {
+  renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+  renderer.setSize(window.innerWidth, window.innerHeight);
+  renderer.shadowMap.enabled = true;
+  renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+  renderer.toneMapping = THREE.ACESFilmicToneMapping;
+  renderer.toneMappingExposure = 2.2;
+} catch (e) {
+  // WebGL unavailable — picker still works, animation will no-op.
+  renderer = { render() {}, setSize() {} };
+  console.warn('WebGL unavailable:', e);
+}
 
 const scene = new THREE.Scene();
 scene.background = new THREE.Color(0x0d1018);
 scene.fog = new THREE.Fog(0x0d1018, 80, 155);
 
 const camera = new THREE.PerspectiveCamera(50, window.innerWidth / window.innerHeight, 0.1, 300);
-camera.position.set(0, 30, -80);
-camera.lookAt(0, 10, HOOP_Z);
+// Elevated broadcast angle: viewer is past the half-court line, looking down at the action with the rim slightly above frame center.
+camera.position.set(0, 22, -82);
+camera.lookAt(0, 4, HOOP_Z);
 
 const controls = new OrbitControls(camera, canvas);
-controls.target.set(0, 10, HOOP_Z);
+controls.target.set(0, 4, HOOP_Z);
 controls.enableDamping = true;
 controls.dampingFactor = 0.08;
 controls.minDistance = 10;
@@ -1103,9 +1680,22 @@ const MAT_MISS = new THREE.MeshStandardMaterial({ color: 0xe04444, emissive: 0xa
 
 // Shared floor-marker materials (not disposed per-shot since they're reused)
 const MAT_DOT_MADE_FILL = new THREE.MeshBasicMaterial({ color: 0x3ddc6a, transparent: true, opacity: 1.0, depthWrite: false });
-const MAT_DOT_MISS_FILL = new THREE.MeshBasicMaterial({ color: 0xe04444, transparent: true, opacity: 1.0, depthWrite: false });
 const MAT_DOT_MADE_RING = new THREE.MeshBasicMaterial({ color: 0x2ab854, transparent: true, opacity: 0.65, depthWrite: false });
-const MAT_DOT_MISS_RING = new THREE.MeshBasicMaterial({ color: 0xc43030, transparent: true, opacity: 0.65, depthWrite: false });
+const MAT_CROSS_MISS    = new THREE.MeshBasicMaterial({ color: 0xe04444, transparent: true, opacity: 0.95, depthWrite: false, side: THREE.DoubleSide });
+
+// Cross (X) geometry for misses — flat on floor, two crossing bars at ±45°
+const CROSS_BAR_GEO = new THREE.PlaneGeometry(0.62, 0.13);
+function makeMissCross(x, z) {
+  const g = new THREE.Group();
+  const b1 = new THREE.Mesh(CROSS_BAR_GEO, MAT_CROSS_MISS);
+  b1.rotation.set(-Math.PI / 2, 0, Math.PI / 4);
+  g.add(b1);
+  const b2 = new THREE.Mesh(CROSS_BAR_GEO, MAT_CROSS_MISS);
+  b2.rotation.set(-Math.PI / 2, 0, -Math.PI / 4);
+  g.add(b2);
+  g.position.set(x, 0.14, z);
+  return g;
+}
 
 // ---------------------------------------------------------------------------
 // Shot system
@@ -1119,14 +1709,32 @@ let activeShots = [];
 let shotQueue = [];
 let firedSet = new Set();
 let queueTimer = 0;
-let playing = true;
+let playing = false;
 let sequenceDone = false;
 let speed = 1;
-let showMade = true;
-let showMissed = true;
 let madeCount = 0;
 let missCount = 0;
 let zoneCounts = { paint: [0,0], mid: [0,0], three: [0,0] }; // [made, total]
+
+// Multi-dimensional shot filters. All dimensions ANDed together.
+const filters = {
+  result: new Set(['made', 'miss']),
+  type:   new Set(['2PT', '3PT']),
+  zone:   new Set(['paint', 'mid', 'three']),  // corner3 collapses into 'three'
+  period: new Set([1, 2, 3, 4, 5]),             // 5 = OT
+};
+
+function shotPassesFilters(s) {
+  if (!filters.result.has(s.made ? 'made' : 'miss')) return false;
+  const typeKey = s.raw.SHOT_TYPE && s.raw.SHOT_TYPE.startsWith('3PT') ? '3PT' : '2PT';
+  if (!filters.type.has(typeKey)) return false;
+  const zoneKey = (s.zone === 'corner3') ? 'three' : s.zone;
+  if (!filters.zone.has(zoneKey)) return false;
+  const p = s.raw.PERIOD || 1;
+  const pKey = p >= 5 ? 5 : p;
+  if (!filters.period.has(pKey)) return false;
+  return true;
+}
 
 function classifyZone(raw) {
   const ax = Math.abs(raw.LOC_X);
@@ -1175,14 +1783,47 @@ function prepareShots() {
 }
 
 function filteredIndices() {
-  return shots.map((_, i) => i);
+  // Only return shots that pass current filters. Stats are driven by what's
+  // actually fired, so they reflect the filter selection.
+  const out = [];
+  for (let i = 0; i < shots.length; i++) {
+    if (shotPassesFilters(shots[i])) out.push(i);
+  }
+  return out;
 }
 
-function fireShotAt(idx) {
+function placeFloorMarker(s) {
+  // Place persistent floor marker only (no in-flight animation).
+  // Used by both normal flight (after landing) and instant-fire (seek).
+  if (s.made) {
+    const dot = new THREE.Mesh(new THREE.CircleGeometry(0.16, 28), MAT_DOT_MADE_FILL);
+    dot.rotation.x = -Math.PI / 2;
+    dot.position.set(s.floor.x, 0.14, s.floor.z);
+    dotGroup.add(dot);
+    const ring = new THREE.Mesh(new THREE.RingGeometry(0.26, 0.42, 36), MAT_DOT_MADE_RING);
+    ring.rotation.x = -Math.PI / 2;
+    ring.position.set(s.floor.x, 0.14, s.floor.z);
+    dotGroup.add(ring);
+  } else {
+    dotGroup.add(makeMissCross(s.floor.x, s.floor.z));
+  }
+}
+
+function fireShotAt(idx, instant = false) {
   firedSet.add(idx);
   const s = shots[idx];
 
-  if (s.heave || (s.made && !showMade) || (!s.made && !showMissed)) {
+  // Heaves: count + zone bookkeeping but no marker (LOC is half-court, noisy) and no animation.
+  if (s.heave) {
+    if (s.made) madeCount++; else missCount++;
+    updateZoneStats(s.zone, s.made);
+    refreshStats();
+    return;
+  }
+
+  if (instant) {
+    // Seek: place marker, count, no in-flight animation.
+    placeFloorMarker(s);
     if (s.made) madeCount++; else missCount++;
     updateZoneStats(s.zone, s.made);
     refreshStats();
@@ -1196,17 +1837,22 @@ function fireShotAt(idx) {
   ball.castShadow = true;
   scene.add(ball);
 
-  // Inner filled dot
-  const dot = new THREE.Mesh(new THREE.CircleGeometry(0.16, 28), s.made ? MAT_DOT_MADE_FILL : MAT_DOT_MISS_FILL);
-  dot.rotation.x = -Math.PI / 2;
-  dot.position.set(s.floor.x, 0.14, s.floor.z);
-  dotGroup.add(dot);
+  // Floor marker: green dot+ring for made, red X cross for missed
+  let dotDot, dotRing = null;
+  if (s.made) {
+    dotDot = new THREE.Mesh(new THREE.CircleGeometry(0.16, 28), MAT_DOT_MADE_FILL);
+    dotDot.rotation.x = -Math.PI / 2;
+    dotDot.position.set(s.floor.x, 0.14, s.floor.z);
+    dotGroup.add(dotDot);
 
-  // Outer ring
-  const ring = new THREE.Mesh(new THREE.RingGeometry(0.26, 0.42, 36), s.made ? MAT_DOT_MADE_RING : MAT_DOT_MISS_RING);
-  ring.rotation.x = -Math.PI / 2;
-  ring.position.set(s.floor.x, 0.14, s.floor.z);
-  dotGroup.add(ring);
+    dotRing = new THREE.Mesh(new THREE.RingGeometry(0.26, 0.42, 36), MAT_DOT_MADE_RING);
+    dotRing.rotation.x = -Math.PI / 2;
+    dotRing.position.set(s.floor.x, 0.14, s.floor.z);
+    dotGroup.add(dotRing);
+  } else {
+    dotDot = makeMissCross(s.floor.x, s.floor.z);
+    dotGroup.add(dotDot);
+  }
 
 
   // Comet trail — tapered billboard ribbon, wide at ball head, vanishes at tail
@@ -1253,7 +1899,7 @@ function fireShotAt(idx) {
     done: false,
     trailGeo, trailMat, trailMesh, ballLight,
     trailHistory: [],
-    dotDot: dot, dotRing: ring,
+    dotDot, dotRing,
   });
 }
 
@@ -1365,7 +2011,8 @@ function resetAll() {
   while (dotGroup.children.length) {
     const c = dotGroup.children[0];
     dotGroup.remove(c);
-    c.geometry.dispose();
+    if (c.geometry) c.geometry.dispose();
+    // Cross marker is a Group of meshes sharing CROSS_BAR_GEO — geometry is reusable, don't dispose
   }
   splashEffects.forEach(ef => {
     if (ef.type === 'made') {
@@ -1429,8 +2076,8 @@ function tick(now) {
       if (s.made) madeCount++; else missCount++;
       refreshStats();
       updateZoneStats(s.zone, s.made);
-      if (s.made) { if (showMade) { triggerCrowdJump(); addMadeSplash(s.idx); } }
-      else         { if (showMissed) addMissBounce(s.end, s.idx); }
+      if (s.made) { if (filters.result.has('made')) { triggerCrowdJump(); addMadeSplash(s.idx); } }
+      else         { if (filters.result.has('miss')) addMissBounce(s.end, s.idx); }
       scene.remove(s.ball);
       scene.remove(s.trailMesh); s.trailGeo.dispose(); s.trailMat.dispose();
       scene.remove(s.ballLight);
@@ -1537,7 +2184,19 @@ function tick(now) {
   if (playing && shots.length > 0 && shotQueue.length === 0 && activeShots.every((s) => s.done)) {
     playing = false;
     sequenceDone = true;
-    document.getElementById('btnPlay').textContent = '↺ Replay';
+    setPlayButton('replay');
+  }
+
+  // Progress bar — denominator is total filtered shots, not shots.length.
+  // firedSet (includes in-flight) + shotQueue (remaining) = original filtered total.
+  const totalFiltered = firedSet.size + shotQueue.length;
+  if (totalFiltered > 0) {
+    const pct = Math.min(100, (firedSet.size / totalFiltered) * 100);
+    document.getElementById('progress-bar').style.width = pct + '%';
+    document.getElementById('progress-thumb').style.left = pct + '%';
+  } else {
+    document.getElementById('progress-bar').style.width = '0%';
+    document.getElementById('progress-thumb').style.left = '0%';
   }
 
   renderer.render(scene, camera);
@@ -1548,22 +2207,94 @@ function tick(now) {
 // ---------------------------------------------------------------------------
 const btnPlay = document.getElementById('btnPlay');
 
+function setPlayButton(state) {
+  // state: 'play' | 'pause' | 'replay' | 'disabled'
+  if (state === 'disabled') { btnPlay.disabled = true; btnPlay.textContent = '▶ Play'; return; }
+  btnPlay.disabled = false;
+  if (state === 'play')   btnPlay.textContent = '▶ Play';
+  if (state === 'pause')  btnPlay.textContent = '⏸ Pause';
+  if (state === 'replay') btnPlay.textContent = '↺ Replay';
+}
+
 btnPlay.addEventListener('click', () => {
-  if (!playing && shotQueue.length === 0) resetAll();
-  sequenceDone = false;
+  if (!currentPlayer) return;
+  if (sequenceDone || (!playing && shotQueue.length === 0)) {
+    resetAll();
+    sequenceDone = false;
+    playing = true;
+    setPlayButton('pause');
+    return;
+  }
   playing = !playing;
-  btnPlay.textContent = playing ? '⏸ Pause' : '▶ Play';
+  setPlayButton(playing ? 'pause' : 'play');
 });
 
 document.getElementById('btnReplay').addEventListener('click', () => {
+  if (!currentPlayer) return;
   resetAll();
+  sequenceDone = false;
   playing = true;
-  btnPlay.textContent = '⏸ Pause';
+  setPlayButton('pause');
 });
 
-document.getElementById('speedSelect').addEventListener('change', (e) => {
-  speed = parseFloat(e.target.value);
+// Speed pill toggles
+document.querySelectorAll('#speed-pills .pill-btn').forEach((btn) => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('#speed-pills .pill-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    speed = parseFloat(btn.dataset.speed);
+  });
 });
+
+// ── Scrubbable progress bar (desktop) ──────────────────────────────
+{
+  const track = document.getElementById('progress-track');
+  const isDesktop = () => window.matchMedia('(min-width: 721px)').matches;
+  let dragging = false;
+
+  function seekTo(fraction) {
+    if (!shots.length) return;
+    const filtered = filteredIndices();
+    if (filtered.length === 0) return;
+    const wasPlaying = playing;
+    playing = false;
+    resetAll();
+    const targetCount = Math.max(0, Math.min(filtered.length, Math.floor(fraction * filtered.length)));
+    for (let k = 0; k < targetCount; k++) fireShotAt(filtered[k], true);
+    shotQueue = filtered.slice(targetCount);
+    sequenceDone = false;
+    if (shotQueue.length > 0) {
+      playing = wasPlaying || true;
+      setPlayButton(playing ? 'pause' : 'play');
+    } else {
+      playing = false;
+      setPlayButton('replay');
+    }
+  }
+
+  function fractionFromEvent(e) {
+    const rect = track.getBoundingClientRect();
+    const x = (e.touches?.[0]?.clientX ?? e.clientX) - rect.left;
+    return Math.max(0, Math.min(1, x / rect.width));
+  }
+
+  track.addEventListener('mousedown', (e) => {
+    if (!isDesktop() || !currentPlayer || shots.length === 0) return;
+    e.preventDefault();
+    dragging = true;
+    track.classList.add('dragging');
+    seekTo(fractionFromEvent(e));
+  });
+  window.addEventListener('mousemove', (e) => {
+    if (!dragging) return;
+    seekTo(fractionFromEvent(e));
+  });
+  window.addEventListener('mouseup', () => {
+    if (!dragging) return;
+    dragging = false;
+    track.classList.remove('dragging');
+  });
+}
 
 function rebuildQueue() {
   shotQueue = filteredIndices().filter((i) => !firedSet.has(i));
@@ -1580,9 +2311,31 @@ function refreshStats() {
   document.getElementById('statThreePct').textContent = pct(zoneCounts.three);
 }
 
+function restartAnimation() {
+  if (!currentPlayer || shots.length === 0) return;
+  fadeCanvas(true);
+  setTimeout(() => {
+    resetAll();
+    sequenceDone = false;
+    if (shotQueue.length === 0) {
+      playing = false;
+      setPlayButton('replay');
+    } else {
+      playing = true;
+      setPlayButton('pause');
+    }
+    fadeCanvas(false);
+  }, 160);
+}
+
+function shotVisibleByActive(e) {
+  // For an active (in-flight or landed) shot effect, return whether its dot/ball should be visible.
+  return e.made ? filters.result.has('made') : filters.result.has('miss');
+}
+
 function applyFilterVisibility() {
   for (const e of activeShots) {
-    const show = (e.made && showMade) || (!e.made && showMissed);
+    const show = shotVisibleByActive(e);
     if (e.dotDot) e.dotDot.visible = show;
     if (e.dotRing) e.dotRing.visible = show;
     if (!e.done) {
@@ -1592,64 +2345,284 @@ function applyFilterVisibility() {
     }
   }
   for (const ef of splashEffects) {
-    const show = (ef.type === 'made' && showMade) || (ef.type === 'miss' && showMissed);
+    const show = ef.type === 'made' ? filters.result.has('made') : filters.result.has('miss');
     if (ef.type === 'made') ef.mesh.visible = show;
     else { ef.ball.visible = show; ef.ripple.visible = show; }
   }
 }
 
-document.getElementById('btnMade').addEventListener('click', () => {
-  showMade = !showMade;
-  document.getElementById('btnMade').classList.toggle('active-made', showMade);
-  rebuildQueue();
-  applyFilterVisibility();
+// ── Filter panel (multi-dim, with Apply/Reset) ───────────────────
+const filterPanel = document.getElementById('filter-panel');
+const filterTriggerSec = document.getElementById('filter-trigger-sec');
+
+// Pending filters = what the user has toggled but not yet applied.
+const pendingFilters = {
+  result: new Set(filters.result),
+  type:   new Set(filters.type),
+  zone:   new Set(filters.zone),
+  period: new Set(filters.period),
+};
+
+const DEFAULT_FILTERS = () => ({
+  result: new Set(['made', 'miss']),
+  type:   new Set(['2PT', '3PT']),
+  zone:   new Set(['paint', 'mid', 'three']),
+  period: new Set([1, 2, 3, 4, 5]),
 });
 
-document.getElementById('btnMiss').addEventListener('click', () => {
-  showMissed = !showMissed;
-  document.getElementById('btnMiss').classList.toggle('active-miss', showMissed);
-  rebuildQueue();
-  applyFilterVisibility();
+function filtersEqual(a, b) {
+  return ['result', 'type', 'zone', 'period'].every(k =>
+    a[k].size === b[k].size && [...a[k]].every(v => b[k].has(v))
+  );
+}
+
+function copyFiltersInto(dst, src) {
+  dst.result = new Set(src.result);
+  dst.type   = new Set(src.type);
+  dst.zone   = new Set(src.zone);
+  dst.period = new Set(src.period);
+}
+
+function syncPillsToPending() {
+  document.querySelectorAll('#filter-panel .pill-btn').forEach(btn => {
+    const group = btn.parentElement.dataset.filterGroup;
+    let on = false;
+    if (group === 'result') {
+      const key = btn.dataset.result;
+      on = pendingFilters.result.has(key);
+      btn.classList.toggle('active-made', on && key === 'made');
+      btn.classList.toggle('active-miss', on && key === 'miss');
+    } else if (group === 'type')   on = pendingFilters.type.has(btn.dataset.type);
+    else if (group === 'zone')   on = pendingFilters.zone.has(btn.dataset.zone);
+    else if (group === 'period') on = pendingFilters.period.has(parseInt(btn.dataset.period, 10));
+    btn.classList.toggle('active', on);
+  });
+}
+
+function updateApplyState() {
+  const changed = !filtersEqual(filters, pendingFilters);
+  const empty = pendingFilters.result.size === 0 || pendingFilters.type.size === 0 ||
+                pendingFilters.zone.size === 0 || pendingFilters.period.size === 0;
+  document.getElementById('filter-apply').disabled = !changed || empty;
+  filterTriggerSec.classList.toggle('pending', changed);
+  document.getElementById('filter-warning').classList.toggle('show', empty);
+}
+
+filterTriggerSec.addEventListener('click', (e) => {
+  e.stopPropagation();
+  filterPanel.classList.toggle('open');
 });
+document.addEventListener('click', (e) => {
+  if (!filterPanel.contains(e.target) && !filterTriggerSec.contains(e.target)) {
+    filterPanel.classList.remove('open');
+  }
+});
+
+filterPanel.addEventListener('click', (e) => {
+  const btn = e.target.closest('.pill-btn');
+  if (!btn) return;
+  const group = btn.parentElement.dataset.filterGroup;
+  if (!group) return;
+
+  const isActive = btn.classList.toggle('active');
+  if (group === 'result') {
+    const key = btn.dataset.result;
+    if (isActive) pendingFilters.result.add(key); else pendingFilters.result.delete(key);
+    if (key === 'made') btn.classList.toggle('active-made', isActive);
+    if (key === 'miss') btn.classList.toggle('active-miss', isActive);
+  } else if (group === 'type') {
+    const key = btn.dataset.type;
+    if (isActive) pendingFilters.type.add(key); else pendingFilters.type.delete(key);
+  } else if (group === 'zone') {
+    const key = btn.dataset.zone;
+    if (isActive) pendingFilters.zone.add(key); else pendingFilters.zone.delete(key);
+  } else if (group === 'period') {
+    const key = parseInt(btn.dataset.period, 10);
+    if (isActive) pendingFilters.period.add(key); else pendingFilters.period.delete(key);
+  }
+  updateApplyState();
+});
+
+document.getElementById('filter-apply').addEventListener('click', (e) => {
+  e.stopPropagation();
+  if (document.getElementById('filter-apply').disabled) return;
+  copyFiltersInto(filters, pendingFilters);
+  refreshFilterSummary();
+  updateApplyState();
+  restartAnimation();
+});
+
+document.getElementById('filter-reset').addEventListener('click', (e) => {
+  e.stopPropagation();
+  const defaults = DEFAULT_FILTERS();
+  copyFiltersInto(pendingFilters, defaults);
+  syncPillsToPending();
+  // If applied filters were already default, just sync UI; otherwise apply + restart.
+  if (!filtersEqual(filters, defaults)) {
+    copyFiltersInto(filters, defaults);
+    refreshFilterSummary();
+    restartAnimation();
+  }
+  updateApplyState();
+});
+
+function refreshFilterSummary() {
+  // Summary reflects APPLIED filters (what's actually animating).
+  const totalDims = 4;
+  const fullDim = (d, full) => d.size === full ? 1 : 0;
+  const allFull = fullDim(filters.result, 2) + fullDim(filters.type, 2) +
+                  fullDim(filters.zone, 3) + fullDim(filters.period, 5);
+  const summary = document.getElementById('filter-summary');
+  const count = document.getElementById('filter-count');
+  const empty = filters.result.size === 0 || filters.type.size === 0 ||
+                filters.zone.size === 0 || filters.period.size === 0;
+
+  if (allFull === totalDims) {
+    summary.textContent = 'All shots';
+  } else {
+    const labels = [];
+    if (filters.result.size < 2) labels.push([...filters.result].join('+'));
+    if (filters.type.size < 2)   labels.push([...filters.type].join('+'));
+    if (filters.zone.size < 3)   labels.push([...filters.zone].join('+'));
+    if (filters.period.size < 5) labels.push(`Q${[...filters.period].sort().join(',')}`);
+    summary.textContent = labels.length ? labels.join(' · ') : 'Custom';
+  }
+  const activeDims = totalDims - allFull;
+  count.textContent = empty ? '!' : (activeDims === 0 ? '—' : `${activeDims}/4`);
+  count.classList.toggle('warn', empty);
+}
 
 function applyTeamColor(hexColor) {
   const c = new THREE.Color(hexColor);
   MAT_APRON.color.copy(c);
   const hex = '#' + hexColor.toString(16).padStart(6, '0');
-  const r = Math.round(c.r * 255), g = Math.round(c.g * 255), b = Math.round(c.b * 255);
+  // Use raw sRGB bytes (not THREE.Color's linear values) for CSS text contrast math.
+  const r = (hexColor >> 16) & 0xff;
+  const g = (hexColor >> 8) & 0xff;
+  const b = hexColor & 0xff;
+
+  // Perceived brightness (0–1) using standard sRGB weights.
+  const brightness = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
+  const minBrightness = 0.62;
+  let tr = r, tg = g, tb = b;
+  if (brightness < minBrightness) {
+    const mix = (minBrightness - brightness) / (1 - brightness);
+    tr = Math.round(r + (255 - r) * mix);
+    tg = Math.round(g + (255 - g) * mix);
+    tb = Math.round(b + (255 - b) * mix);
+  }
+  const hexText = '#' +
+    tr.toString(16).padStart(2, '0') +
+    tg.toString(16).padStart(2, '0') +
+    tb.toString(16).padStart(2, '0');
+
   document.documentElement.style.setProperty('--accent', hex);
   document.documentElement.style.setProperty('--accent-rgb', `${r}, ${g}, ${b}`);
+  document.documentElement.style.setProperty('--accent-text', hexText);
   updateCrowdColors(hexColor);
 }
 
-async function loadPlayer(player) {
-  currentPlayer = player;
-  applyTeamColor(player.color);
+function setPlayerTrigger(player, loading = false) {
+  const trig = document.getElementById('player-trigger');
+  const nameEl = document.getElementById('player-trigger-name');
+  const teamEl = document.getElementById('player-trigger-team');
+  const brandPlayer = document.getElementById('brand-player');
 
-  if (!player.hasData) {
-    RAW_SHOTS = [];
-    resetAll();
-    document.getElementById('playerInput').value = player.name;
+  if (loading) {
+    trig.classList.add('loading');
+    nameEl.textContent = player ? player.name : 'Loading…';
     return;
   }
+  trig.classList.remove('loading');
 
-  let cached = shotCache.get(player.id);
-  if (!cached) {
-    try {
-      const mod = await import(`./data/shots/${player.id}.js`);
-      cached = mod[`SHOTS_${player.id}`];
-      shotCache.set(player.id, cached);
-    } catch {
-      cached = [];
-    }
+  if (!player) {
+    trig.classList.add('empty');
+    nameEl.textContent = 'Select player';
+    teamEl.style.display = 'none';
+    brandPlayer.textContent = '';
+    brandPlayer.classList.remove('visible');
+    return;
   }
-  RAW_SHOTS = cached;
-  prepareShots();
-  resetAll();
-  const instrHidden = document.getElementById('instructions').classList.contains('hidden');
-  playing = instrHidden;
-  document.getElementById('btnPlay').textContent = playing ? '⏸ Pause' : '▶ Play';
-  document.getElementById('playerInput').value = player.name;
+  trig.classList.remove('empty');
+  nameEl.textContent = player.name;
+  if (player.team) {
+    teamEl.textContent = player.team;
+    teamEl.style.display = 'inline-block';
+  } else {
+    teamEl.style.display = 'none';
+  }
+  brandPlayer.textContent = player.name + (player.team ? '  ·  ' + player.team : '');
+  brandPlayer.classList.add('visible');
+}
+
+function fadeCanvas(on) {
+  document.getElementById('transition-overlay').classList.toggle('show', on);
+}
+
+function nextFrame() {
+  return new Promise(resolve => requestAnimationFrame(resolve));
+}
+
+function resetFiltersToDefault() {
+  const defaults = DEFAULT_FILTERS();
+  copyFiltersInto(filters, defaults);
+  copyFiltersInto(pendingFilters, defaults);
+  syncPillsToPending();
+  refreshFilterSummary();
+  updateApplyState();
+}
+
+async function loadPlayer(player) {
+  const token = ++playerLoadToken;
+  applyTeamColor(player.color);
+  setPlayerTrigger(player, true);
+  setPlayButton('disabled');
+  fadeCanvas(true);
+  resetFiltersToDefault();
+  await nextFrame();
+  if (token !== playerLoadToken) return;
+
+  try {
+    if (!player.hasData) {
+      currentPlayer = player;
+      RAW_SHOTS = [];
+      resetAll();
+      setPlayerTrigger(player, false);
+      setPlayButton('disabled');
+      document.getElementById('stats').classList.remove('hidden');
+      return;
+    }
+
+    let cached = shotCache.get(player.id);
+    if (!cached) {
+      try {
+        const mod = await import(`./data/shots/${player.id}.js`);
+        if (token !== playerLoadToken) return;
+        cached = mod[`SHOTS_${player.id}`];
+        shotCache.set(player.id, cached);
+      } catch {
+        cached = [];
+      }
+    }
+    if (token !== playerLoadToken) return;
+
+    currentPlayer = player;
+    RAW_SHOTS = cached;
+    prepareShots();
+    resetAll();
+
+    setPlayerTrigger(player, false);
+    document.getElementById('stats').classList.remove('hidden');
+    document.getElementById('progress-track').classList.add('show');
+
+    // Auto-start animation once player loads from picker
+    playing = true;
+    sequenceDone = false;
+    setPlayButton('pause');
+  } finally {
+    // Small delay so the fade is perceptible
+    if (token === playerLoadToken) setTimeout(() => fadeCanvas(false), 120);
+  }
 }
 
 document.getElementById('chkArena').addEventListener('change', (e) => {
@@ -1663,135 +2636,286 @@ window.addEventListener('resize', () => {
 });
 
 // ---------------------------------------------------------------------------
-// Player combobox
+// Player-trigger click → opens picker
 // ---------------------------------------------------------------------------
-{
-  const input = document.getElementById('playerInput');
-  const dropdown = document.getElementById('playerDropdown');
-  let focusIdx = -1;
-  let filteredPlayers = [];
+document.getElementById('player-trigger-sec').addEventListener('click', (e) => {
+  e.stopPropagation();
+  showPicker();
+});
 
-  function renderDropdown(query) {
-    const q = query.toLowerCase().trim();
-    filteredPlayers = q ? ROSTER.filter(p => p.name.toLowerCase().includes(q)) : ROSTER;
-    focusIdx = -1;
-    dropdown.innerHTML = '';
-    filteredPlayers.forEach((p, i) => {
-      const el = document.createElement('div');
-      el.className = 'player-opt' + (p.hasData ? '' : ' no-data');
-      el.dataset.idx = i;
-      el.innerHTML =
-        `<span class="player-opt-name">${p.name}</span>` +
-        `<span class="player-opt-meta">${p.team}</span>`;
-      el.addEventListener('mousedown', (e) => {
-        e.preventDefault();
-        selectPlayer(p);
-      });
-      dropdown.appendChild(el);
+// ESC key closes picker (if open)
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape' && currentPlayer) {
+    const root = document.getElementById('picker');
+    if (root.classList.contains('visible')) picker.hide();
+  }
+});
+
+// ---------------------------------------------------------------------------
+// Player picker (welcome screen)
+// ---------------------------------------------------------------------------
+const picker = (() => {
+  const root = document.getElementById('picker');
+  const grid = document.getElementById('picker-grid');
+  const empty = document.getElementById('picker-empty');
+  const count = document.getElementById('picker-count');
+  const searchEl = document.getElementById('picker-search');
+  const teamEl = document.getElementById('pf-team');
+  const posEl = document.getElementById('pf-pos');
+  const heightEl = document.getElementById('pf-height');
+  const fgaEl = document.getElementById('pf-fga');
+  const fgpctEl = document.getElementById('pf-fgpct');
+  const ptsEl = document.getElementById('pf-pts');
+  const sortEl = document.getElementById('pf-sort');
+  let renderedOnce = false;
+  let filterFrame = 0;
+
+  function addOption(select, value, text) {
+    const opt = document.createElement('option');
+    opt.value = value;
+    opt.textContent = text;
+    select.appendChild(opt);
+  }
+
+  // Populate team dropdown from roster
+  const teams = [...new Set(ROSTER.map(p => p.team).filter(Boolean))].sort();
+  teamEl.replaceChildren();
+  addOption(teamEl, '', 'All');
+  teams.forEach(t => addOption(teamEl, t, t));
+
+  function inchesToText(inches) {
+    if (!inches) return '—';
+    return `${Math.round(inches * 2.54)} cm`;
+  }
+
+  function rebuildHeightOptions() {
+    // Negative values encode "max" (< X), positive encode "min" (> X)
+    // Thresholds in inches: 72=183cm, 76=193cm, 80=203cm, 84=213cm
+    const opts = [
+      { v: '0',   t: 'All' },
+      { v: '-72', t: '< 183 cm' },
+      { v: '72',  t: '> 183 cm' },
+      { v: '76',  t: '> 193 cm' },
+      { v: '80',  t: '> 203 cm' },
+      { v: '84',  t: '> 213 cm' },
+    ];
+    const prev = heightEl.value;
+    heightEl.replaceChildren();
+    opts.forEach(o => addOption(heightEl, o.v, o.t));
+    if (prev) heightEl.value = prev;
+  }
+
+  function teamColor(p) { return '#' + (p.color || 0x445566).toString(16).padStart(6, '0'); }
+
+  function posMatches(playerPos, filter) {
+    if (!filter) return true;
+    if (!playerPos) return false;
+    const pp = playerPos.toUpperCase();
+    if (filter === 'G') return pp.includes('G');
+    if (filter === 'F') return pp.includes('F');
+    if (filter === 'C') return pp.includes('C');
+    return true;
+  }
+
+  function applyFilters() {
+    filterFrame = 0;
+    const q = searchEl.value.toLowerCase().trim();
+    const team = teamEl.value;
+    const pos = posEl.value;
+    const hVal = parseInt(heightEl.value, 10) || 0;
+    const minFga = parseInt(fgaEl.value, 10) || 0;
+    const minFgPct = parseFloat(fgpctEl.value) || 0;
+    const minPts = parseInt(ptsEl.value, 10) || 0;
+    const sortKey = sortEl.value;
+
+    let rows = ROSTER.filter(p => {
+      if (q && !p.name.toLowerCase().includes(q)) return false;
+      if (team && p.team !== team) return false;
+      if (!posMatches(p.position, pos)) return false;
+      // Height: positive = X+, negative = < |X|. Exclude players with unknown height (0) from both bounded filters.
+      if (hVal > 0 && (p.height_in || 0) < hVal) return false;
+      if (hVal < 0 && (!p.height_in || p.height_in >= Math.abs(hVal))) return false;
+      if (minFga && (p.fga || 0) < minFga) return false;
+      if (minFgPct && (p.fg_pct || 0) < minFgPct) return false;
+      if (minPts && (p.pts || 0) < minPts) return false;
+      return true;
     });
-    // when showing the full list, scroll to the current player
-    if (!q && currentPlayer) {
-      focusIdx = filteredPlayers.findIndex(p => p.id === currentPlayer.id);
-      const opts = dropdown.querySelectorAll('.player-opt');
-      if (focusIdx >= 0) {
-        opts[focusIdx].classList.add('focused');
-        setTimeout(() => opts[focusIdx].scrollIntoView({ block: 'center' }), 0);
+
+    // Sort: players with data first within each sort
+    rows.sort((a, b) => {
+      if (a.hasData !== b.hasData) return a.hasData ? -1 : 1;
+      if (sortKey === 'name') return a.name.localeCompare(b.name);
+      const av = a[sortKey] || 0;
+      const bv = b[sortKey] || 0;
+      return bv - av;
+    });
+
+    render(rows);
+  }
+
+  function scheduleApplyFilters() {
+    if (filterFrame) return;
+    filterFrame = requestAnimationFrame(applyFilters);
+  }
+
+  function render(rows) {
+    const cardEl = document.getElementById('picker-card');
+    const animateHeight = renderedOnce && root.classList.contains('visible');
+    const fromH = animateHeight ? cardEl.getBoundingClientRect().height : 0;
+
+    grid.replaceChildren();
+    if (rows.length === 0) {
+      empty.classList.add('show');
+      count.textContent = '';
+    } else {
+      empty.classList.remove('show');
+      count.textContent = `${rows.length} player${rows.length === 1 ? '' : 's'}`;
+    }
+    const frag = document.createDocumentFragment();
+    rows.forEach((p, i) => {
+      const card = document.createElement('div');
+      card.className = 'pp-card' + (p.hasData ? '' : ' no-data');
+      // Stagger first row to give a soft cascade; cap so 500 cards don't queue forever.
+      const stagger = Math.min(i, 16) * 12;
+      card.style.animationDelay = stagger + 'ms';
+      const fgPctText = p.fg_pct ? (p.fg_pct * 100).toFixed(1) + '%' : '—';
+
+      const teamRow = document.createElement('div');
+      teamRow.className = 'pp-card-team-row';
+      const dot = document.createElement('span');
+      dot.className = 'pp-team-dot';
+      dot.style.background = teamColor(p);
+      const abbr = document.createElement('span');
+      abbr.className = 'pp-team-abbr';
+      abbr.textContent = p.team || '—';
+      const posTag = document.createElement('span');
+      posTag.className = 'pp-pos-tag';
+      posTag.textContent = `${p.position || ''} ${p.height_in ? inchesToText(p.height_in) : ''}`.trim();
+      teamRow.append(dot, abbr, posTag);
+
+      const name = document.createElement('div');
+      name.className = 'pp-card-name';
+      name.textContent = p.name;
+
+      const stats = document.createElement('div');
+      stats.className = 'pp-card-stats';
+      [
+        [p.pts || 0, 'PTS'],
+        [p.fga || 0, 'FGA'],
+        [fgPctText, 'FG%'],
+      ].forEach(([value, label]) => {
+        const stat = document.createElement('div');
+        stat.className = 'pp-stat';
+        const val = document.createElement('span');
+        val.className = 'pp-stat-v';
+        val.textContent = value;
+        const lbl = document.createElement('span');
+        lbl.className = 'pp-stat-l';
+        lbl.textContent = label;
+        stat.append(val, lbl);
+        stats.appendChild(stat);
+      });
+
+      card.append(teamRow, name, stats);
+      card.addEventListener('click', () => {
+        if (!p.hasData) return;
+        hide();
+        requestAnimationFrame(() => loadPlayer(p));
+      });
+      frag.appendChild(card);
+    });
+    grid.appendChild(frag);
+    renderedOnce = true;
+
+    // FLIP: animate card height from previous to natural new height.
+    if (animateHeight && fromH > 0) {
+      cardEl.style.transition = 'none';
+      cardEl.style.height = '';
+      const toH = cardEl.getBoundingClientRect().height;
+      if (Math.abs(toH - fromH) > 4) {
+        cardEl.style.height = fromH + 'px';
+        void cardEl.offsetHeight;
+        cardEl.style.transition = 'height 0.28s cubic-bezier(0.4, 0, 0.2, 1)';
+        cardEl.style.height = toH + 'px';
+        clearTimeout(cardEl._hTimer);
+        cardEl._hTimer = setTimeout(() => {
+          cardEl.style.transition = '';
+          cardEl.style.height = '';
+        }, 320);
+      } else {
+        cardEl.style.height = '';
       }
     }
-    dropdown.classList.add('open');
   }
 
-  function selectPlayer(p) {
-    input.value = p.name;
-    dropdown.classList.remove('open');
-    input.blur();
-    loadPlayer(p);
-  }
-
-  function moveFocus(dir) {
-    const opts = dropdown.querySelectorAll('.player-opt');
-    if (!opts.length) return;
-    focusIdx = Math.max(0, Math.min(opts.length - 1, focusIdx + dir));
-    opts.forEach((el, i) => el.classList.toggle('focused', i === focusIdx));
-    opts[focusIdx].scrollIntoView({ block: 'nearest' });
-  }
-
-  input.addEventListener('focus', () => { input.select(); renderDropdown(''); });
-  input.addEventListener('input', () => renderDropdown(input.value));
-  input.addEventListener('blur', () => {
-    // restore current player name — prevents arbitrary text from sticking
-    setTimeout(() => {
-      dropdown.classList.remove('open');
-      if (currentPlayer) input.value = currentPlayer.name;
-    }, 150);
-  });
-  input.addEventListener('keydown', (e) => {
-    if (e.key === 'ArrowDown') { e.preventDefault(); moveFocus(1); }
-    else if (e.key === 'ArrowUp') { e.preventDefault(); moveFocus(-1); }
-    else if (e.key === 'Enter') {
-      if (focusIdx >= 0 && filteredPlayers[focusIdx]) selectPlayer(filteredPlayers[focusIdx]);
-      else if (filteredPlayers.length === 1) selectPlayer(filteredPlayers[0]);
+  function show() {
+    root.classList.remove('hidden');
+    // Force reflow so opacity transition fires
+    void root.offsetHeight;
+    root.classList.add('visible');
+    if (!renderedOnce && !filterFrame) {
+      filterFrame = requestAnimationFrame(() => {
+        filterFrame = requestAnimationFrame(applyFilters);
+      });
     }
-    else if (e.key === 'Escape') {
-      dropdown.classList.remove('open');
-      input.blur();
+    setTimeout(() => searchEl.focus(), 200);
+  }
+
+  function hide() {
+    root.classList.remove('visible');
+    setTimeout(() => root.classList.add('hidden'), 380);
+  }
+
+  // Click on backdrop dismisses — only when a player is already playing.
+  root.addEventListener('click', (e) => {
+    if (e.target === root && currentPlayer) hide();
+  });
+
+  rebuildHeightOptions();
+
+  [searchEl, teamEl, posEl, heightEl, fgaEl, fgpctEl, ptsEl, sortEl].forEach(el => {
+    el.addEventListener('input', scheduleApplyFilters);
+    el.addEventListener('change', scheduleApplyFilters);
+  });
+
+  searchEl.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') searchEl.blur();
+    if (e.key === 'Enter') {
+      const first = grid.querySelector('.pp-card:not(.no-data)');
+      if (first) first.click();
     }
   });
-}
+
+  return { show, hide };
+})();
+
+function showPicker() { picker.show(); }
 
 // ---------------------------------------------------------------------------
 // Boot
 // ---------------------------------------------------------------------------
 try {
-  buildArena();
   buildCourt();
   build3PointArc();
   buildBasket();
-  prepareShots();
-  shotQueue = [...filteredIndices()];
+  shotQueue = [];
   requestAnimationFrame(tick);
-
-  const firstPlayer = ROSTER.find(p => p.hasData) ?? ROSTER[0];
-  if (firstPlayer) loadPlayer(firstPlayer).catch(e => window.onerror(String(e)));
+  refreshFilterSummary();
+  setPlayButton('disabled');
+  // Welcome screen first — user picks a player.
+  picker.show();
+  requestAnimationFrame(() => {
+    requestAnimationFrame(() => {
+      try {
+        buildArena();
+        if (arenaGroup) arenaGroup.visible = document.getElementById('chkArena').checked;
+      } catch(e) {
+        window.onerror(e.message + '\n' + e.stack, '', 0);
+      }
+    });
+  });
 } catch(e) {
   window.onerror(e.message + '\n' + e.stack, '', 0);
-}
-
-// ---------------------------------------------------------------------------
-// Instructions overlay
-// ---------------------------------------------------------------------------
-{
-  const overlay = document.getElementById('instructions');
-  let dismissTimer = null;
-
-  function showInstructions() {
-    overlay.classList.remove('hidden', 'fade-out');
-    clearTimeout(dismissTimer);
-    dismissTimer = setTimeout(dismissInstructions, 6000);
-  }
-
-  function dismissInstructions() {
-    overlay.classList.add('fade-out');
-    overlay.addEventListener('transitionend', () => {
-      overlay.classList.add('hidden');
-      if (shots.length > 0 && !playing) {
-        playing = true;
-        document.getElementById('btnPlay').textContent = '⏸ Pause';
-      }
-    }, { once: true });
-  }
-
-  overlay.addEventListener('click', dismissInstructions);
-  document.addEventListener('keydown', (e) => {
-    if (!overlay.classList.contains('hidden')) dismissInstructions();
-  }, { once: false });
-
-  document.getElementById('btnHelp').addEventListener('click', (e) => {
-    e.stopPropagation();
-    showInstructions();
-  });
-
-  showInstructions();
 }
 </script>
 </body>
