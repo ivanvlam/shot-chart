@@ -443,6 +443,26 @@
       text-transform: uppercase;
       color: var(--lbl);
     }
+    .filter-row-pair {
+      display: flex;
+      border-bottom: 1px solid rgba(255,255,255,0.05);
+    }
+    .filter-row-pair .filter-row {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 7px;
+      border-bottom: none;
+      padding: 9px 0;
+    }
+    .filter-row-pair .filter-row:not(:first-child) {
+      padding-left: 14px;
+    }
+    .filter-row-pair .filter-row:not(:last-child) {
+      padding-right: 14px;
+      border-right: 1px solid rgba(255,255,255,0.05);
+    }
     #filter-warning {
       margin-top: 10px;
       padding: 8px 10px;
@@ -1531,18 +1551,30 @@
       .pf-select { font-size: 11.5px; padding: 6px 24px 6px 9px; }
     }
 
-    /* Landscape phones: collapse right HUD to a single row, freeing the court. */
+    /* Landscape phones: both HUD cards on the same row, freeing the court. */
     @media (max-height: 500px) and (orientation: landscape) {
       .hud-card { height: 48px; }
-      #ctrl-left { top: 8px; }
+
+      /* Left card: compact slice on the left */
+      #ctrl-left {
+        top: 8px;
+        left: 8px;
+        right: auto;
+        width: 36vw;
+        justify-content: flex-start;
+        overflow: hidden;
+      }
+      #brand-eyebrow { display: none; }
       #brand-title { font-size: 13px; }
       #brand-player { font-size: 9px; }
       #btnPlay { padding: 0 10px; height: 28px; font-size: 10.5px; }
       .icon-btn { width: 28px; height: 28px; font-size: 13px; }
 
-      /* ── Single-row right HUD: Player | Filter | Speed | Camera ── */
+      /* Right card: same row, fills the remaining width */
       #ctrl-right {
-        top: 62px;
+        top: 8px;
+        left: calc(36vw + 16px);
+        right: 8px;
         flex-direction: row;
         height: 48px;
         padding: 0;
@@ -1557,14 +1589,14 @@
         min-width: 0;
         flex-direction: row;
         align-items: center;
-        justify-content: space-between;
-        padding: 0 10px;
+        justify-content: center;
+        padding: 0 8px;
         border-bottom: none;
         border-right: 1px solid rgba(255,255,255,0.05);
-        gap: 6px;
+        gap: 5px;
         height: 100%;
       }
-      #ctrl-right > .cfg-pair > .cfg-sec:last-child { border-right: none; }
+      #ctrl-right > .cfg-pair > .cfg-sec:last-child { border-right: none; flex: 1.8; }
       #ctrl-right .cfg-lbl,
       #ctrl-right .cfg-lbl-row {
         font-size: 7.5px;
@@ -1578,14 +1610,15 @@
         padding: 5px 20px 5px 8px;
         background-position: right 6px center;
       }
-      .player-trigger { flex: 1; min-width: 0; max-width: none; overflow: hidden; }
-      .player-trigger-name {
-        font-size: 10.5px;
-        max-width: 90px;
-        overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
-      }
-      .filter-trigger { flex: 1; min-width: 0; overflow: hidden; }
-      .filter-summary { font-size: 10.5px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+      /* Player: show team badge only, no name */
+      .player-trigger { display: flex; min-width: 0; max-width: none; }
+      .player-trigger-name { display: none; }
+      /* Filter: show count badge only, no summary text */
+      .filter-trigger { display: flex; min-width: 0; }
+      .filter-summary { display: none; }
+      /* Narrow player/filter columns so speed/camera have more room */
+      #player-trigger-sec,
+      #filter-trigger-sec { flex: 0 0 auto; padding: 0 12px; }
 
       /* Picker: shrink the header and let the player grid breathe. */
       #picker-card { max-height: calc(100dvh - 12px); }
@@ -1627,6 +1660,15 @@
         width: 36px;
         height: 36px;
         font-size: 16px;
+      }
+      /* Help popover centered vertically in landscape. */
+      #help-popover {
+        top: 50%;
+        bottom: auto;
+        transform: translateY(calc(-50% + 8px)) scale(0.98);
+      }
+      #help-popover.open {
+        transform: translateY(-50%) scale(1);
       }
     }
   </style>
@@ -1721,26 +1763,28 @@
 
 <!-- Filter panel: drops below right card -->
 <div id="filter-panel">
-  <div class="filter-row">
-    <span class="filter-row-lbl">Result</span>
-    <div class="pill-group" data-filter-group="result" role="group" aria-label="Shot result">
-      <button class="pill-btn active active-made" data-result="made" aria-pressed="true">Made</button>
-      <button class="pill-btn active active-miss" data-result="miss" aria-pressed="true">Missed</button>
+  <div class="filter-row-pair">
+    <div class="filter-row">
+      <span class="filter-row-lbl">Result</span>
+      <div class="pill-group" data-filter-group="result" role="group" aria-label="Shot result">
+        <button class="pill-btn active active-made" data-result="made" aria-pressed="true">Made</button>
+        <button class="pill-btn active active-miss" data-result="miss" aria-pressed="true">Missed</button>
+      </div>
     </div>
-  </div>
-  <div class="filter-row">
-    <span class="filter-row-lbl">Type</span>
-    <div class="pill-group" data-filter-group="type" role="group" aria-label="Shot type">
-      <button class="pill-btn active" data-type="2PT" aria-pressed="true">2PT</button>
-      <button class="pill-btn active" data-type="3PT" aria-pressed="true">3PT</button>
+    <div class="filter-row">
+      <span class="filter-row-lbl">Type</span>
+      <div class="pill-group" data-filter-group="type" role="group" aria-label="Shot type">
+        <button class="pill-btn active" data-type="2PT" aria-pressed="true">2PT</button>
+        <button class="pill-btn active" data-type="3PT" aria-pressed="true">3PT</button>
+      </div>
     </div>
-  </div>
-  <div class="filter-row">
-    <span class="filter-row-lbl">Zone</span>
-    <div class="pill-group" data-filter-group="zone" role="group" aria-label="Shot zone">
-      <button class="pill-btn active" data-zone="paint" aria-pressed="true">Paint</button>
-      <button class="pill-btn active" data-zone="mid" aria-pressed="true">Mid</button>
-      <button class="pill-btn active" data-zone="three" aria-pressed="true">3PT</button>
+    <div class="filter-row">
+      <span class="filter-row-lbl">Zone</span>
+      <div class="pill-group" data-filter-group="zone" role="group" aria-label="Shot zone">
+        <button class="pill-btn active" data-zone="paint" aria-pressed="true">Paint</button>
+        <button class="pill-btn active" data-zone="mid" aria-pressed="true">Mid</button>
+        <button class="pill-btn active" data-zone="three" aria-pressed="true">3PT</button>
+      </div>
     </div>
   </div>
   <div class="filter-row">
