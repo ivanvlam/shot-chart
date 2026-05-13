@@ -189,6 +189,8 @@
     }
     .cfg-sec.clickable { cursor: pointer; }
     .cfg-sec.clickable:hover .cfg-lbl { color: rgba(255,255,255,0.65); }
+    /* Speed + Camera wrapper — desktop keeps them in column flow, mobile flips to a single shared row. */
+    .cfg-pair { display: contents; }
 
     .cfg-lbl {
       font-size: 9.5px;
@@ -511,7 +513,11 @@
     /* ── Player picker (welcome screen) ─────────────────────────── */
     #picker {
       position: fixed;
-      inset: 0;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      height: 100dvh;
       display: flex;
       align-items: center;
       justify-content: center;
@@ -792,6 +798,8 @@
       display: none;
     }
     #picker-empty.show { display: block; }
+    /* Mobile-only disclosure for advanced picker filters — hidden on desktop. */
+    #picker-filters-toggle { display: none; }
     #picker-count {
       padding: 10px 28px 0;
       font-size: 10px;
@@ -908,6 +916,7 @@
     #progress-bar {
       height: 100%;
       width: 0%;
+      border-radius: 99px;
       background: linear-gradient(90deg, rgba(var(--accent-rgb), 0.85), rgba(255,255,255,0.95));
       box-shadow: 0 0 8px rgba(var(--accent-rgb), 0.6);
       transition: width 0.10s linear;
@@ -933,8 +942,8 @@
       #progress-track:hover #progress-thumb,
       #progress-track.dragging #progress-thumb { opacity: 1; }
     }
-    @media (max-width: 720px) {
-      #progress-track { height: 2px; cursor: default; }
+    @media (max-width: 720px), (max-height: 500px) and (orientation: landscape) {
+      #progress-track { height: 2px; touch-action: none; }
       #progress-thumb { display: none; }
     }
 
@@ -1200,21 +1209,15 @@
       cursor: pointer;
     }
     #help-tip .help-tip-x:hover { color: #fff; }
-    @media (max-width: 720px) {
-      #help-bubble {
-        right: 10px;
-        bottom: calc(env(safe-area-inset-bottom, 0) + 84px);
-        width: 38px;
-        height: 38px;
-        font-size: 17px;
-      }
+    @media (max-width: 720px), (max-height: 500px) and (orientation: landscape) {
+      /* #help-bubble mobile sizing/positioning lives in the consolidated mobile block below. */
       #help-popover,
       #help-tip {
         right: 10px;
         width: calc(100vw - 20px);
       }
-      #help-popover { bottom: 132px; }
-      #help-tip { bottom: 176px; }
+      #help-popover { bottom: calc(env(safe-area-inset-bottom, 0) + 172px); }
+      #help-tip { bottom: calc(env(safe-area-inset-bottom, 0) + 216px); }
     }
 
     /* Canvas transition overlay (player switch) */
@@ -1280,7 +1283,7 @@
     }
 
     /* ── Mobile layout ───────────────────────────────────────────── */
-    @media (max-width: 720px) {
+    @media (max-width: 720px), (max-height: 500px) and (orientation: landscape) {
       .hud-card { height: 56px; border-radius: 10px; }
 
       #ctrl-left { left: 10px; right: 10px; top: 10px; justify-content: center; padding-left: 4px; }
@@ -1305,7 +1308,8 @@
       }
       #ctrl-right .card-div { display: none; }
       #ctrl-right > .cfg-sec,
-      #ctrl-right > .arena-wrap {
+      #ctrl-right > .arena-wrap,
+      #ctrl-right > .cfg-pair > .cfg-sec {
         width: auto;
         height: auto;
         flex-direction: row;
@@ -1334,15 +1338,46 @@
       .filter-trigger { flex: 1; justify-content: flex-end; }
       .filter-summary { font-size: 11.5px; }
 
+      /* SPEED + CAMERA share a single row on mobile. */
+      #ctrl-right > .cfg-pair {
+        display: flex;
+        flex-direction: row;
+        align-items: stretch;
+        border-bottom: 1px solid rgba(255,255,255,0.05);
+      }
+      #ctrl-right > .cfg-pair > .cfg-sec {
+        flex: 1;
+        min-width: 0;
+        border-bottom: none;
+        padding: 9px 12px;
+      }
+      #ctrl-right > .cfg-pair > .cfg-sec + .cfg-sec {
+        border-left: 1px solid rgba(255,255,255,0.05);
+      }
+      #ctrl-right > .cfg-pair .cfg-lbl,
+      #ctrl-right > .cfg-pair .cfg-lbl-row {
+        width: auto;
+        font-size: 8.5px;
+        letter-spacing: 0.18em;
+      }
+
       /* SPEED / CAMERA selects (swapped in by the < 1400 px rule) — fit on
          the right of each row and don't crowd the label. */
       #ctrl-right .cfg-select {
         width: auto;
-        min-width: 120px;
+        min-width: 0;
         max-width: 50%;
         font-size: 12px;
         padding: 7px 26px 7px 12px;
         background-position: right 10px center;
+      }
+      #ctrl-right > .cfg-pair .cfg-select {
+        flex: 1;
+        max-width: none;
+        min-width: 0;
+        font-size: 11.5px;
+        padding: 6px 22px 6px 10px;
+        background-position: right 8px center;
       }
 
       /* Arena toggle hidden on mobile — arena stays on by default
@@ -1350,21 +1385,40 @@
       #ctrl-right > .arena-wrap { display: none; }
 
       /* Filter panel docks just above the stats footer on mobile (clear of the
-         taller right HUD). */
+         taller right HUD) and reads as a distinct floating sheet. */
       #filter-panel {
         left: 10px; right: 10px;
-        top: auto; bottom: calc(env(safe-area-inset-bottom, 0) + 110px);
+        top: auto; bottom: calc(env(safe-area-inset-bottom, 0) + 128px);
         width: auto;
-        max-height: 60vh;
+        max-height: 58vh;
         overflow-y: auto;
+        box-shadow: 0 18px 44px rgba(0, 0, 0, 0.55), 0 0 0 1px rgba(255,255,255,0.04) inset;
+        border-radius: 14px;
       }
       .filter-row { grid-template-columns: 60px 1fr; gap: 8px; padding: 7px 0; }
       #filter-panel [data-filter-group="period"] .pill-btn { padding: 7px 6px; }
 
+      /* Progress bar — moved into #stats (via JS) on mobile and pinned above the card. */
+      #stats > #progress-track {
+        position: absolute;
+        left: 15%; right: 15%;
+        top: -18px;
+        bottom: auto;
+        height: 6px;
+        margin-top: 0;
+        border-radius: 99px;
+        background: rgba(28, 32, 44, 0.92);
+        border: 1px solid rgba(255,255,255,0.18);
+        box-shadow: 0 2px 10px rgba(0,0,0,0.55);
+        z-index: 2;
+      }
+
       #stats {
         left: 10px; right: 10px; bottom: 10px;
         transform: none;
+        overflow: visible;
       }
+      #stats .stat-side { flex: 1; }
       .stat-side { padding: 9px 14px; }
       .stat-mid { padding: 9px 12px; }
       .stat-val { font-size: 22px; width: 4.5ch; }
@@ -1376,21 +1430,39 @@
       #picker-card {
         width: calc(100vw - 20px);
         max-height: calc(100vh - 20px);
+        max-height: calc(100dvh - 20px);
         border-radius: 12px;
       }
-      #picker-header { padding: 18px 18px 12px; }
-      #picker-header-top { flex-direction: column; gap: 12px; }
-      #picker-repo-link { align-self: flex-start; padding: 6px 9px; font-size: 10px; }
+      #picker-header { padding: 16px 16px 10px; }
+      /* Keep header as a single row: title left, GitHub icon-only chip right. */
+      #picker-header-top {
+        flex-direction: row;
+        align-items: center;
+        gap: 10px;
+      }
+      #picker-repo-link {
+        align-self: center;
+        padding: 0;
+        width: 36px;
+        height: 36px;
+        justify-content: center;
+        gap: 0;
+        border-radius: 8px;
+        flex-shrink: 0;
+      }
+      #picker-repo-link .repo-link-text { display: none; }
+      #picker-repo-link svg { width: 17px; height: 17px; }
       #picker-title { font-size: 20px; }
-      #picker-search-wrap { padding: 12px 18px 8px; }
-      #picker-search-icon { left: 32px; }
-      /* Filters: 3-col grid. SORT spans the full bottom row.
-         Total height ≈ 3 rows so the player grid gets more vertical room. */
+      #picker-subtitle { font-size: 11.5px; margin-top: 4px; }
+      #picker-search-wrap { padding: 10px 16px 8px; }
+      #picker-search-icon { left: 30px; }
+      /* Filters: 3-col grid. Primary filters always visible; advanced collapse behind a toggle.
+         When expanded, SORT spans the full bottom row. */
       #picker-filters {
         display: grid;
         grid-template-columns: 1fr 1fr 1fr;
         gap: 8px 8px;
-        padding: 10px 14px;
+        padding: 8px 14px;
       }
       .pf-group {
         flex-direction: column;
@@ -1406,12 +1478,48 @@
         padding: 6px 22px 6px 8px;
         background-position: right 8px center;
       }
-      #picker-filters .pf-group:last-child { grid-column: 1 / -1; }
-      #picker-results { padding: 12px 14px 16px; }
+      #picker-filters .pf-advanced { display: none; }
+      #picker-filters.show-more .pf-advanced { display: flex; }
+      #picker-filters.show-more .pf-advanced:last-child { grid-column: 1 / -1; }
+      #picker-filters-toggle {
+        display: block;
+        margin: 4px 14px 6px;
+        padding: 6px 12px;
+        background: rgba(255,255,255,0.04);
+        border: 1px solid rgba(255,255,255,0.10);
+        border-radius: 7px;
+        color: rgba(255,255,255,0.70);
+        font-family: 'Space Grotesk', sans-serif;
+        font-size: 10.5px;
+        font-weight: 700;
+        letter-spacing: 0.18em;
+        text-transform: uppercase;
+        cursor: pointer;
+      }
+      #picker-filters-toggle:hover,
+      #picker-filters-toggle:focus-visible {
+        background: rgba(255,255,255,0.07);
+        color: #fff;
+        outline: none;
+      }
+      #picker-count { padding: 6px 16px 0; }
+      #picker-results { padding: 10px 14px 16px; }
       #picker-grid { grid-template-columns: repeat(2, 1fr); gap: 8px; }
       .pp-card { padding: 10px 11px; }
       .pp-card-name { font-size: 12.5px; }
       .pp-stat-v { font-size: 12px; }
+
+      /* Help bubble — bigger and higher-contrast so it stays visible against the court and stats card. */
+      #help-bubble {
+        right: 10px;
+        bottom: calc(env(safe-area-inset-bottom, 0) + 122px);
+        width: 42px;
+        height: 42px;
+        font-size: 19px;
+        border: 1px solid rgba(255,255,255,0.32);
+        background: rgba(16, 20, 30, 0.96);
+        box-shadow: 0 6px 18px rgba(0,0,0,0.55), 0 1px 0 rgba(255,255,255,0.10) inset;
+      }
     }
 
     /* Narrower phones: scale down slightly more. */
@@ -1421,6 +1529,105 @@
       .speed-pills .pill-btn { padding: 4px 6px; font-size: 9.5px; }
       #camera-pills .pill-btn { padding: 4px 5px; font-size: 9px; }
       .pf-select { font-size: 11.5px; padding: 6px 24px 6px 9px; }
+    }
+
+    /* Landscape phones: collapse right HUD to a single row, freeing the court. */
+    @media (max-height: 500px) and (orientation: landscape) {
+      .hud-card { height: 48px; }
+      #ctrl-left { top: 8px; }
+      #brand-title { font-size: 13px; }
+      #brand-player { font-size: 9px; }
+      #btnPlay { padding: 0 10px; height: 28px; font-size: 10.5px; }
+      .icon-btn { width: 28px; height: 28px; font-size: 13px; }
+
+      /* ── Single-row right HUD: Player | Filter | Speed | Camera ── */
+      #ctrl-right {
+        top: 62px;
+        flex-direction: row;
+        height: 48px;
+        padding: 0;
+        align-items: stretch;
+      }
+      /* Flatten .cfg-pair so Speed and Camera join the row directly. */
+      #ctrl-right > .cfg-pair { display: contents; }
+      /* Each section: equal-width column with label left, control right. */
+      #ctrl-right > .cfg-sec,
+      #ctrl-right > .cfg-pair > .cfg-sec {
+        flex: 1;
+        min-width: 0;
+        flex-direction: row;
+        align-items: center;
+        justify-content: space-between;
+        padding: 0 10px;
+        border-bottom: none;
+        border-right: 1px solid rgba(255,255,255,0.05);
+        gap: 6px;
+        height: 100%;
+      }
+      #ctrl-right > .cfg-pair > .cfg-sec:last-child { border-right: none; }
+      #ctrl-right .cfg-lbl,
+      #ctrl-right .cfg-lbl-row {
+        font-size: 7.5px;
+        letter-spacing: 0.14em;
+        width: auto;
+        flex-shrink: 0;
+      }
+      #ctrl-right .cfg-select {
+        flex: 1; min-width: 0; max-width: none;
+        font-size: 11px;
+        padding: 5px 20px 5px 8px;
+        background-position: right 6px center;
+      }
+      .player-trigger { flex: 1; min-width: 0; max-width: none; overflow: hidden; }
+      .player-trigger-name {
+        font-size: 10.5px;
+        max-width: 90px;
+        overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+      }
+      .filter-trigger { flex: 1; min-width: 0; overflow: hidden; }
+      .filter-summary { font-size: 10.5px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+      /* Picker: shrink the header and let the player grid breathe. */
+      #picker-card { max-height: calc(100dvh - 12px); }
+      #picker-header { padding: 10px 14px 8px; }
+      #picker-eyebrow { font-size: 9px; margin-bottom: 4px; }
+      #picker-title { font-size: 17px; }
+      #picker-subtitle { display: none; }
+      #picker-repo-link { width: 32px; height: 32px; }
+      #picker-search-wrap { padding: 8px 14px 6px; }
+      #picker-search { padding: 9px 12px 9px 34px; font-size: 13px; }
+      #picker-search-icon { left: 26px; }
+      #picker-filters { padding: 6px 12px; gap: 6px; }
+      .pf-lbl { font-size: 8px; }
+      .pf-select { padding: 5px 20px 5px 8px; font-size: 11px; }
+      #picker-filters-toggle { margin: 2px 12px 4px; padding: 5px 10px; font-size: 10px; }
+      #picker-count { padding: 4px 14px 0; font-size: 9px; }
+      #picker-results { padding: 8px 12px 12px; }
+      #picker-grid { grid-template-columns: repeat(3, 1fr); gap: 6px; }
+      .pp-card { padding: 8px 9px; }
+
+      /* Stats card: centered, compact — not full-width like portrait. */
+      #stats {
+        bottom: 8px;
+        left: 50%;
+        right: auto;
+        transform: translateX(-50%);
+        width: min(360px, calc(100vw - 72px));
+      }
+      .stat-side { padding: 6px 12px; }
+      .stat-mid { padding: 6px 10px; }
+      .stat-val { font-size: 17px; }
+      .stat-zone-val { font-size: 11.5px; }
+      #stats > #progress-track { height: 5px; top: -16px; }
+
+      /* Help button sits in the bottom-right corner. */
+      #help-bubble {
+        bottom: 8px;
+        right: 20px;
+        width: 36px;
+        height: 36px;
+        font-size: 16px;
+      }
     }
   </style>
 </head>
@@ -1465,40 +1672,42 @@
     </div>
   </div>
   <div class="card-div"></div>
-  <div class="cfg-sec">
-    <span class="cfg-lbl">Speed</span>
-    <div class="speed-pills" id="speed-pills" role="radiogroup" aria-label="Animation speed">
-      <button class="pill-btn" data-speed="0.5" role="radio" aria-checked="false">0.5×</button>
-      <button class="pill-btn active" data-speed="1" role="radio" aria-checked="true">1×</button>
-      <button class="pill-btn" data-speed="2" role="radio" aria-checked="false">2×</button>
-      <button class="pill-btn" data-speed="5" role="radio" aria-checked="false">5×</button>
-      <button class="pill-btn" data-speed="10" role="radio" aria-checked="false">10×</button>
+  <div class="cfg-pair">
+    <div class="cfg-sec">
+      <span class="cfg-lbl">Speed</span>
+      <div class="speed-pills" id="speed-pills" role="radiogroup" aria-label="Animation speed">
+        <button class="pill-btn" data-speed="0.5" role="radio" aria-checked="false">0.5×</button>
+        <button class="pill-btn active" data-speed="1" role="radio" aria-checked="true">1×</button>
+        <button class="pill-btn" data-speed="2" role="radio" aria-checked="false">2×</button>
+        <button class="pill-btn" data-speed="5" role="radio" aria-checked="false">5×</button>
+        <button class="pill-btn" data-speed="10" role="radio" aria-checked="false">10×</button>
+      </div>
+      <select class="cfg-select" id="speed-select" aria-label="Animation speed">
+        <option value="0.5">0.5×</option>
+        <option value="1" selected>1×</option>
+        <option value="2">2×</option>
+        <option value="5">5×</option>
+        <option value="10">10×</option>
+      </select>
     </div>
-    <select class="cfg-select" id="speed-select" aria-label="Animation speed">
-      <option value="0.5">0.5×</option>
-      <option value="1" selected>1×</option>
-      <option value="2">2×</option>
-      <option value="5">5×</option>
-      <option value="10">10×</option>
-    </select>
-  </div>
-  <div class="card-div"></div>
-  <div class="cfg-sec">
-    <span class="cfg-lbl">Camera</span>
-    <div class="speed-pills" id="camera-pills" role="radiogroup" aria-label="Camera view">
-      <button class="pill-btn active" data-cam="broadcast" role="radio" aria-checked="true" title="Broadcast view">BCAST</button>
-      <button class="pill-btn" data-cam="sideline"  role="radio" aria-checked="false" title="Sideline view">SIDE</button>
-      <button class="pill-btn" data-cam="top"       role="radio" aria-checked="false" title="Top-down view">TOP</button>
-      <button class="pill-btn" data-cam="pan"       role="radio" aria-checked="false" title="Auto-rotate / panning">PAN</button>
-      <button class="pill-btn" data-cam="free"      role="radio" aria-checked="false" title="Free orbit">FREE</button>
+    <div class="card-div"></div>
+    <div class="cfg-sec">
+      <span class="cfg-lbl">Camera</span>
+      <div class="speed-pills" id="camera-pills" role="radiogroup" aria-label="Camera view">
+        <button class="pill-btn active" data-cam="broadcast" role="radio" aria-checked="true" title="Broadcast view">BCAST</button>
+        <button class="pill-btn" data-cam="sideline"  role="radio" aria-checked="false" title="Sideline view">SIDE</button>
+        <button class="pill-btn" data-cam="top"       role="radio" aria-checked="false" title="Top-down view">TOP</button>
+        <button class="pill-btn" data-cam="pan"       role="radio" aria-checked="false" title="Auto-rotate / panning">PAN</button>
+        <button class="pill-btn" data-cam="free"      role="radio" aria-checked="false" title="Free orbit">FREE</button>
+      </div>
+      <select class="cfg-select" id="camera-select" aria-label="Camera view">
+        <option value="broadcast" selected>Broadcast</option>
+        <option value="sideline">Sideline</option>
+        <option value="top">Top-down</option>
+        <option value="pan">Pan / Auto</option>
+        <option value="free">Free</option>
+      </select>
     </div>
-    <select class="cfg-select" id="camera-select" aria-label="Camera view">
-      <option value="broadcast" selected>Broadcast</option>
-      <option value="sideline">Sideline</option>
-      <option value="top">Top-down</option>
-      <option value="pan">Pan / Auto</option>
-      <option value="free">Free</option>
-    </select>
   </div>
   <div class="card-div"></div>
   <label class="arena-wrap">
@@ -1621,7 +1830,7 @@
           <svg viewBox="0 0 16 16" aria-hidden="true">
             <path d="M8 0C3.58 0 0 3.67 0 8.2c0 3.62 2.29 6.69 5.47 7.78.4.08.55-.18.55-.4 0-.2-.01-.85-.01-1.54-2.01.38-2.53-.5-2.69-.96-.09-.24-.48-.96-.82-1.15-.28-.15-.68-.52-.01-.53.63-.01 1.08.59 1.23.84.72 1.24 1.87.89 2.33.68.07-.53.28-.89.51-1.09-1.78-.21-3.64-.91-3.64-4.05 0-.89.31-1.63.82-2.2-.08-.21-.36-1.04.08-2.17 0 0 .67-.22 2.2.84A7.4 7.4 0 0 1 8 3.98c.68 0 1.36.09 2 .27 1.53-1.06 2.2-.84 2.2-.84.44 1.13.16 1.96.08 2.17.51.57.82 1.3.82 2.2 0 3.15-1.87 3.84-3.65 4.05.29.25.54.75.54 1.52 0 1.09-.01 1.97-.01 2.24 0 .22.15.48.55.4A8.08 8.08 0 0 0 16 8.2C16 3.67 12.42 0 8 0Z"/>
           </svg>
-          GitHub
+          <span class="repo-link-text">GitHub</span>
         </a>
       </div>
     </div>
@@ -1647,7 +1856,7 @@
         <span class="pf-lbl">Height</span>
         <select id="pf-height" class="pf-select"></select>
       </div>
-      <div class="pf-group">
+      <div class="pf-group pf-advanced">
         <span class="pf-lbl">FGA</span>
         <select id="pf-fga" class="pf-select">
           <option value="0">All</option>
@@ -1657,7 +1866,7 @@
           <option value="1000">&gt; 1000</option>
         </select>
       </div>
-      <div class="pf-group">
+      <div class="pf-group pf-advanced">
         <span class="pf-lbl">FG%</span>
         <select id="pf-fgpct" class="pf-select">
           <option value="0">All</option>
@@ -1666,7 +1875,7 @@
           <option value="0.50">&gt; 50%</option>
         </select>
       </div>
-      <div class="pf-group">
+      <div class="pf-group pf-advanced">
         <span class="pf-lbl">PTS</span>
         <select id="pf-pts" class="pf-select">
           <option value="0">All</option>
@@ -1675,7 +1884,7 @@
           <option value="1500">&gt; 1500</option>
         </select>
       </div>
-      <div class="pf-group">
+      <div class="pf-group pf-advanced">
         <span class="pf-lbl">Sort</span>
         <select id="pf-sort" class="pf-select">
           <option value="pts">PTS ↓</option>
@@ -1686,6 +1895,7 @@
         </select>
       </div>
     </div>
+    <button id="picker-filters-toggle" type="button" aria-expanded="false" aria-controls="picker-filters">More filters ▾</button>
     <div id="picker-count"></div>
     <div id="picker-results">
       <div id="picker-grid"></div>
@@ -3037,6 +3247,22 @@ function currentSeekFraction() {
     dragging = false;
     track.classList.remove('dragging');
   });
+
+  track.addEventListener('touchstart', (e) => {
+    if (!currentPlayer || shots.length === 0) return;
+    e.preventDefault();
+    dragging = true;
+    seekTo(fractionFromEvent(e));
+  }, { passive: false });
+  window.addEventListener('touchmove', (e) => {
+    if (!dragging) return;
+    e.preventDefault();
+    seekTo(fractionFromEvent(e));
+  }, { passive: false });
+  window.addEventListener('touchend', () => {
+    if (!dragging) return;
+    dragging = false;
+  });
 }
 
 function rebuildQueue() {
@@ -3201,6 +3427,8 @@ filterPanel.addEventListener('click', (e) => {
   updateApplyState();
 });
 
+const isMobileViewport = () => window.matchMedia('(max-width: 720px), (max-height: 500px) and (orientation: landscape)').matches;
+
 document.getElementById('filter-apply').addEventListener('click', (e) => {
   e.stopPropagation();
   if (document.getElementById('filter-apply').disabled) return;
@@ -3208,6 +3436,7 @@ document.getElementById('filter-apply').addEventListener('click', (e) => {
   refreshFilterSummary();
   updateApplyState();
   restartAnimation();
+  if (isMobileViewport()) filterPanel.classList.remove('open');
 });
 
 document.getElementById('filter-reset').addEventListener('click', (e) => {
@@ -3222,6 +3451,7 @@ document.getElementById('filter-reset').addEventListener('click', (e) => {
     restartAnimation();
   }
   updateApplyState();
+  if (isMobileViewport()) filterPanel.classList.remove('open');
 });
 
 function refreshFilterSummary() {
@@ -3823,10 +4053,52 @@ const picker = (() => {
     }
   });
 
+  // Mobile-only disclosure for advanced filters (FGA, FG%, PTS, Sort).
+  const filtersEl = document.getElementById('picker-filters');
+  const filtersToggle = document.getElementById('picker-filters-toggle');
+  if (filtersToggle && filtersEl) {
+    const STORAGE_KEY = 'picker-show-more';
+    let showMore = false;
+    try { showMore = sessionStorage.getItem(STORAGE_KEY) === '1'; } catch {}
+    const applyShowMore = () => {
+      filtersEl.classList.toggle('show-more', showMore);
+      filtersToggle.setAttribute('aria-expanded', showMore ? 'true' : 'false');
+      filtersToggle.textContent = showMore ? 'Fewer filters ▴' : 'More filters ▾';
+    };
+    filtersToggle.addEventListener('click', () => {
+      showMore = !showMore;
+      try { sessionStorage.setItem(STORAGE_KEY, showMore ? '1' : '0'); } catch {}
+      applyShowMore();
+    });
+    applyShowMore();
+  }
+
   return { show, hide };
 })();
 
 function showPicker() { picker.show(); }
+
+// On mobile (portrait phones + landscape phones), dock the progress track inside #stats so it
+// visually sits on the card's top edge. Re-run on resize/orientation change so a rotated phone
+// still gets the right placement.
+(function setupMobileProgressDock() {
+  const stats = document.getElementById('stats');
+  const track = document.getElementById('progress-track');
+  if (!stats || !track) return;
+  const mobileMQ = window.matchMedia('(max-width: 720px), (max-height: 500px) and (orientation: landscape)');
+  const parentForDesktop = track.parentElement;
+  const apply = () => {
+    if (mobileMQ.matches) {
+      if (track.parentElement !== stats) stats.insertBefore(track, stats.firstChild);
+    } else {
+      if (track.parentElement !== parentForDesktop && parentForDesktop) {
+        parentForDesktop.appendChild(track);
+      }
+    }
+  };
+  apply();
+  mobileMQ.addEventListener?.('change', apply);
+})();
 
 // ---------------------------------------------------------------------------
 // Boot
