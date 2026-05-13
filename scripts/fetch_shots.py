@@ -25,6 +25,7 @@ from typing import Any
 
 try:
     from nba_api.stats.endpoints import (
+        commonplayerinfo,
         commonteamroster,
         leaguedashplayerstats,
         leagueleaders,
@@ -65,6 +66,41 @@ def height_to_inches(height_str: str) -> int:
         return int(ft) * 12 + int(inch)
     except ValueError:
         return 0
+
+
+def normalize_position(position: str) -> str:
+    """Normalize NBA position labels to G/F/C (or combos like G-F)."""
+    raw = (position or "").strip()
+    if not raw:
+        return ""
+    p = raw.upper()
+    if p in {"G", "F", "C", "G-F", "F-G", "F-C", "C-F", "G-C", "C-G"}:
+        return p
+
+    # Handle full-word labels from commonplayerinfo, e.g. "Guard-Forward".
+    tokens = re.split(r"[-/\s]+", p)
+    mapped: list[str] = []
+    for tok in tokens:
+        if not tok:
+            continue
+        if tok.startswith("GUARD"):
+            mapped.append("G")
+        elif tok.startswith("FORWARD"):
+            mapped.append("F")
+        elif tok.startswith("CENTER") or tok.startswith("CENTRE"):
+            mapped.append("C")
+        elif tok in {"G", "F", "C"}:
+            mapped.append(tok)
+
+    if not mapped:
+        return raw
+
+    # Keep order from source, de-duplicate repeats.
+    uniq: list[str] = []
+    for m in mapped:
+        if m not in uniq:
+            uniq.append(m)
+    return "-".join(uniq)
 
 
 def fetch_roster() -> list[dict[str, Any]]:
@@ -115,12 +151,50 @@ def fetch_heights() -> dict[int, dict[str, Any]]:
                 pid = int(row["PLAYER_ID"])
                 out[pid] = {
                     "height_in": height_to_inches(str(row.get("HEIGHT", ""))),
-                    "position": str(row.get("POSITION", "") or ""),
+                    "position": normalize_position(str(row.get("POSITION", "") or "")),
                 }
             print(f"  [{i+1}/{len(teams)}] {abbr} — {len(df)} players")
         except Exception as e:
             print(f"  [{i+1}/{len(teams)}] {abbr} — ERROR: {e}")
         time.sleep(0.5)
+    return out
+
+
+def fetch_player_info(player_id: int) -> dict[str, Any] | None:
+    """Per-player fallback via commonplayerinfo. Returns {height_in, position} or None."""
+    try:
+        df = commonplayerinfo.CommonPlayerInfo(
+            player_id=player_id, timeout=30
+        ).get_data_frames()[0]
+    except Exception as e:
+        print(f"    commonplayerinfo({player_id}) ERROR: {e}")
+        return None
+    if df.empty:
+        return None
+    row = df.iloc[0]
+    return {
+        "height_in": height_to_inches(str(row.get("HEIGHT", ""))),
+        "position": normalize_position(str(row.get("POSITION", "") or "")),
+    }
+
+
+def fetch_missing_heights(
+    missing_ids: list[int],
+) -> dict[int, dict[str, Any]]:
+    """Per-player commonplayerinfo pass for IDs missing height and/or position."""
+    out: dict[int, dict[str, Any]] = {}
+    total = len(missing_ids)
+    if total == 0:
+        return out
+    print(f"Filling {total} missing heights via commonplayerinfo...")
+    for i, pid in enumerate(missing_ids):
+        info = fetch_player_info(pid)
+        if info and (info["height_in"] > 0 or info["position"]):
+            out[pid] = info
+            print(f"  [{i + 1}/{total}] {pid} — {info['height_in']}in / {info['position'] or '-'}")
+        else:
+            print(f"  [{i + 1}/{total}] {pid} — no height/position data")
+        time.sleep(0.6)
     return out
 
 
@@ -294,12 +368,50 @@ def cmd_heights() -> None:
     matched = 0
     for p in players:
         h = heights.get(p["id"])
-        if h:
+        if not h:
+            continue
+        updated = False
+        if h["height_in"] > 0 and int(p.get("height_in", 0)) != h["height_in"]:
             p["height_in"] = h["height_in"]
+            updated = True
+        if h["position"] and str(p.get("position", "")).strip() != h["position"]:
             p["position"] = h["position"]
+            updated = True
+        if updated:
             matched += 1
+
+    # Fallback: per-player commonplayerinfo for anyone still at height_in == 0.
+    # Catches waived / mid-season-released players who don't appear in any
+    # current team roster but did show up in leaguedashplayerstats.
+    missing = [
+        p["id"] for p in players
+        if not p.get("height_in") or not str(p.get("position", "")).strip()
+    ]
+    if missing:
+        filled = fetch_missing_heights(missing)
+        for p in players:
+            f = filled.get(p["id"])
+            if not f:
+                continue
+            updated = False
+            if f["height_in"] > 0 and int(p.get("height_in", 0)) != f["height_in"]:
+                p["height_in"] = f["height_in"]
+                updated = True
+            if f["position"] and str(p.get("position", "")).strip() != f["position"]:
+                p["position"] = f["position"]
+                updated = True
+            if updated:
+                matched += 1
+
     write_roster(players)
-    print(f"Updated heights/positions for {matched}/{len(players)} players")
+    still_missing = sum(
+        1 for p in players
+        if not p.get("height_in") or not str(p.get("position", "")).strip()
+    )
+    print(
+        f"Updated heights/positions for {matched}/{len(players)} players "
+        f"({still_missing} still missing height and/or position)"
+    )
 
 
 def shot_file_needs_upgrade(path: Path) -> bool:
