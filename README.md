@@ -1,4 +1,4 @@
-# NBA Shot Chart 3D
+# NBA Shot Chart 3D :basketball:
 
 3D shot chart for NBA players built with Three.js. Animates field goal attempts from the 2025-26 regular season over a half-court scene.
 
@@ -8,9 +8,10 @@
 
 ## Features
 
-- **Shot data** - 581 players, full 2025-26 regular season
-- **3D scene** - court, backboard, hoop, net, bleachers, instanced crowd (~650 heads)
+- **Shot data** - 582 players, full 2025-26 regular season
+- **3D scene** - court, backboard, hoop, net, bleachers, instanced crowd (~720 heads)
 - **Per-shot animation** - parabolic arc, ribbon trail, floor markers, point light
+- **Shot markers** - made shots leave a green dot+ring, misses leave a red X, and clicking a marker shows distance/quarter/action details
 - **Landing effects** - rings on makes, bouncing ball and floor ripple on misses
 - **Crowd** - wave animation on made shots
 - **Filtered stats** - MADE / MISSED / FG%, plus PAINT / MID / 3PT FG% for the current shot filter
@@ -20,7 +21,7 @@
 - **Speed** - 0.5x to 10x
 - **Progress** - scrub through the filtered shot sequence
 - **Arena toggle** - show or hide the surrounding arena
-- **Camera** - orbit, scroll to zoom, right-drag to pan
+- **Camera** - preset views (broadcast/sideline/top), auto camera pan mode, and free orbit controls (zoom + right-drag pan)
 
 ## Running locally
 
