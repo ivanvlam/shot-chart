@@ -274,39 +274,70 @@
     }
 
     /* Pill toggle (used for filters, speed) */
-    .pill-group { display: flex; gap: 4px; flex-wrap: wrap; }
+    .pill-group { display: flex; gap: 5px; flex-wrap: wrap; }
 
     .pill-btn {
-      background: rgba(255,255,255,0.04);
-      border: 1px solid rgba(255,255,255,0.08);
-      color: rgba(255,255,255,0.36);
+      background: rgba(255,255,255,0.035);
+      border: 1px solid rgba(255,255,255,0.09);
+      color: rgba(255,255,255,0.52);
       font-family: 'Space Grotesk', sans-serif;
       font-size: 11.5px;
       font-weight: 700;
       letter-spacing: 0.08em;
       text-transform: uppercase;
-      padding: 5px 11px;
-      border-radius: 6px;
+      padding: 6px 12px;
+      border-radius: 7px;
       cursor: pointer;
-      transition: background 0.15s, border-color 0.15s, color 0.15s;
+      transition: background 0.15s, border-color 0.15s, color 0.15s, box-shadow 0.15s, transform 0.10s;
       white-space: nowrap;
       line-height: 1;
     }
-    .pill-btn:hover { background: rgba(255,255,255,0.07); color: rgba(255,255,255,0.55); }
+    .pill-btn:hover {
+      background: rgba(255,255,255,0.07);
+      color: rgba(255,255,255,0.78);
+      border-color: rgba(255,255,255,0.16);
+    }
+    .pill-btn:active { transform: translateY(1px); }
     .pill-btn.active {
-      background: rgba(var(--accent-rgb), 0.20);
-      border-color: rgba(var(--accent-rgb), 0.55);
+      background: rgba(var(--accent-rgb), 0.22);
+      border-color: rgba(var(--accent-rgb), 0.70);
       color: #fff;
+      box-shadow: 0 0 0 1px rgba(var(--accent-rgb), 0.15), 0 2px 8px rgba(var(--accent-rgb), 0.20) inset;
     }
     .pill-btn.active-made {
-      background: rgba(var(--made-rgb), 0.16);
-      border-color: rgba(var(--made-rgb), 0.50);
+      background: rgba(var(--made-rgb), 0.18);
+      border-color: rgba(var(--made-rgb), 0.65);
       color: var(--made);
+      box-shadow: 0 0 0 1px rgba(var(--made-rgb), 0.15), 0 2px 8px rgba(var(--made-rgb), 0.18) inset;
     }
     .pill-btn.active-miss {
-      background: rgba(var(--miss-rgb), 0.16);
-      border-color: rgba(var(--miss-rgb), 0.50);
+      background: rgba(var(--miss-rgb), 0.18);
+      border-color: rgba(var(--miss-rgb), 0.65);
       color: var(--miss);
+      box-shadow: 0 0 0 1px rgba(var(--miss-rgb), 0.15), 0 2px 8px rgba(var(--miss-rgb), 0.18) inset;
+    }
+    .pill-btn.disabled {
+      opacity: 0.30;
+      cursor: not-allowed;
+      pointer-events: none;
+      background: rgba(255,255,255,0.02);
+      border-color: rgba(255,255,255,0.05);
+      color: rgba(255,255,255,0.30);
+      box-shadow: none;
+    }
+
+    /* Filter-panel pills: slightly roomier than the speed pills */
+    #filter-panel .pill-btn { padding: 7px 13px; font-size: 11.5px; }
+    /* Quarter row has 5 pills — keep them all on a single line. */
+    #filter-panel [data-filter-group="period"] {
+      flex-wrap: nowrap;
+      gap: 4px;
+    }
+    #filter-panel [data-filter-group="period"] .pill-btn {
+      padding: 7px 8px;
+      letter-spacing: 0.05em;
+      flex: 1 1 0;
+      text-align: center;
     }
 
     /* Speed pills (smaller) */
@@ -315,6 +346,11 @@
       padding: 5px 8px;
       font-size: 11px;
       letter-spacing: 0.03em;
+    }
+    #camera-pills .pill-btn {
+      padding: 5px 7px;
+      font-size: 10px;
+      letter-spacing: 0.04em;
     }
 
     /* Arena toggle */
@@ -864,10 +900,9 @@
       backdrop-filter: blur(20px);
       -webkit-backdrop-filter: blur(20px);
       z-index: 11;
-      transition: height 0.15s ease, margin-top 0.15s ease;
       cursor: pointer;
       opacity: 0;
-      transition: opacity 0.3s, height 0.15s ease;
+      transition: opacity 0.3s, height 0.15s ease, margin-top 0.15s ease;
     }
     #progress-track.show { opacity: 1; }
     #progress-bar {
@@ -903,6 +938,285 @@
       #progress-thumb { display: none; }
     }
 
+    /* Shot tooltip — anchored to a clicked floor marker via JS in tick() */
+    #shot-tooltip {
+      position: fixed;
+      left: 0; top: 0;
+      transform: translate(-50%, calc(-100% - 18px));
+      pointer-events: none;
+      background: var(--card-bg-flat);
+      backdrop-filter: blur(20px) saturate(1.4);
+      -webkit-backdrop-filter: blur(20px) saturate(1.4);
+      border: 1px solid var(--card-border);
+      border-radius: 8px;
+      padding: 9px 13px 10px;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.5), 0 1px 0 var(--card-highlight) inset;
+      z-index: 12;
+      opacity: 0;
+      display: none;
+      white-space: nowrap;
+      min-width: 110px;
+      transition: opacity 0.14s ease;
+    }
+    #shot-tooltip.show { display: block; opacity: 1; }
+    #shot-tooltip::after {
+      content: '';
+      position: absolute;
+      left: 50%;
+      bottom: -6px;
+      width: 8px;
+      height: 8px;
+      background: var(--card-bg-flat);
+      border-right: 1px solid var(--card-border);
+      border-bottom: 1px solid var(--card-border);
+      transform: translateX(-50%) rotate(45deg);
+    }
+    #shot-tooltip .tt-head {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 10.5px;
+      font-weight: 700;
+      letter-spacing: 0.20em;
+      text-transform: uppercase;
+      line-height: 1;
+    }
+    #shot-tooltip .tt-head.tt-made { color: var(--made); }
+    #shot-tooltip .tt-head.tt-miss { color: var(--miss); }
+    #shot-tooltip .tt-meta {
+      font-family: 'DM Mono', monospace;
+      font-size: 12.5px;
+      font-weight: 500;
+      color: #fff;
+      margin-top: 6px;
+      letter-spacing: 0.02em;
+      font-variant-numeric: tabular-nums;
+    }
+    #shot-tooltip .tt-action {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 11px;
+      color: var(--text-dim);
+      margin-top: 3px;
+      letter-spacing: 0.02em;
+      max-width: 240px;
+      white-space: normal;
+    }
+
+    /* Help affordance — compact bottom-right bubble + popover */
+    #help-bubble {
+      position: fixed;
+      right: 18px;
+      bottom: calc(env(safe-area-inset-bottom, 0) + 18px);
+      width: 42px;
+      height: 42px;
+      border-radius: 50%;
+      border: 1px solid rgba(255,255,255,0.12);
+      background: rgba(12, 15, 24, 0.95);
+      color: #fff;
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 18px;
+      font-weight: 700;
+      line-height: 1;
+      display: grid;
+      place-items: center;
+      cursor: pointer;
+      z-index: 70;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.35), 0 1px 0 var(--card-highlight) inset;
+      backdrop-filter: blur(20px) saturate(1.3);
+      -webkit-backdrop-filter: blur(20px) saturate(1.3);
+      transition: transform 0.14s ease, border-color 0.14s ease, background 0.14s ease, box-shadow 0.14s ease;
+    }
+    #help-bubble:hover {
+      transform: translateY(-1px);
+      border-color: rgba(var(--accent-rgb), 0.45);
+      background: rgba(18, 22, 32, 0.98);
+      box-shadow: 0 10px 28px rgba(0,0,0,0.42), 0 0 0 1px rgba(var(--accent-rgb), 0.12) inset;
+    }
+    #help-bubble:focus-visible {
+      outline: 2px solid rgba(var(--accent-rgb), 0.75);
+      outline-offset: 3px;
+    }
+    #help-popover,
+    #help-tip {
+      position: fixed;
+      right: 18px;
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      box-shadow: var(--card-shadow);
+      backdrop-filter: blur(32px) saturate(1.5);
+      -webkit-backdrop-filter: blur(32px) saturate(1.5);
+      border-radius: 12px;
+      z-index: 71;
+      opacity: 0;
+      pointer-events: none;
+      transform: translateY(8px) scale(0.98);
+      transition: opacity 0.16s ease, transform 0.16s ease;
+    }
+    #help-popover.open,
+    #help-tip.show {
+      opacity: 1;
+      pointer-events: auto;
+      transform: translateY(0) scale(1);
+    }
+    #help-popover {
+      bottom: 72px;
+      width: min(320px, calc(100vw - 36px));
+      padding: 14px 14px 12px;
+    }
+    #help-popover::after,
+    #help-tip::after {
+      content: '';
+      position: absolute;
+      right: 15px;
+      bottom: -6px;
+      width: 10px;
+      height: 10px;
+      background: var(--card-bg);
+      border-right: 1px solid var(--card-border);
+      border-bottom: 1px solid var(--card-border);
+      transform: rotate(45deg);
+    }
+    .help-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      margin-bottom: 10px;
+    }
+    .help-title {
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: #fff;
+    }
+    .help-close {
+      width: 28px;
+      height: 28px;
+      border-radius: 8px;
+      border: 1px solid rgba(255,255,255,0.10);
+      background: rgba(255,255,255,0.04);
+      color: rgba(255,255,255,0.70);
+      font-size: 16px;
+      line-height: 1;
+      cursor: pointer;
+      display: grid;
+      place-items: center;
+    }
+    .help-close:hover {
+      background: rgba(255,255,255,0.08);
+      color: #fff;
+    }
+    .help-step {
+      display: grid;
+      grid-template-columns: 20px 1fr;
+      gap: 8px;
+      align-items: start;
+      margin: 8px 0;
+      color: rgba(255,255,255,0.84);
+      font-size: 12px;
+      line-height: 1.35;
+    }
+    .help-step-num,
+    .help-chip {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 999px;
+      background: rgba(var(--accent-rgb), 0.16);
+      color: #fff;
+      border: 1px solid rgba(var(--accent-rgb), 0.28);
+    }
+    .help-step-num {
+      width: 20px;
+      height: 20px;
+      font-size: 10px;
+      font-weight: 700;
+      flex-shrink: 0;
+      margin-top: 1px;
+    }
+    .help-legend {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      justify-content: center;
+      align-items: center;
+      margin: 10px 0 8px;
+    }
+    .help-chip {
+      padding: 5px 8px;
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      white-space: nowrap;
+    }
+    .help-chip.made {
+      background: rgba(var(--made-rgb), 0.16);
+      border-color: rgba(var(--made-rgb), 0.32);
+      color: var(--made);
+    }
+    .help-chip.miss {
+      background: rgba(var(--miss-rgb), 0.16);
+      border-color: rgba(var(--miss-rgb), 0.32);
+      color: var(--miss);
+    }
+    .help-foot {
+      margin-top: 8px;
+      padding-top: 8px;
+      border-top: 1px solid rgba(255,255,255,0.06);
+      color: rgba(255,255,255,0.56);
+      font-size: 11px;
+      line-height: 1.4;
+    }
+    #help-tip {
+      bottom: 122px;
+      width: min(240px, calc(100vw - 36px));
+      padding: 10px 12px;
+      cursor: pointer;
+    }
+    #help-tip .help-tip-title {
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      color: var(--accent-text);
+      margin-bottom: 4px;
+    }
+    #help-tip .help-tip-body {
+      font-size: 12px;
+      line-height: 1.35;
+      color: rgba(255,255,255,0.84);
+    }
+    #help-tip .help-tip-x {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      width: 20px;
+      height: 20px;
+      border: none;
+      background: transparent;
+      color: rgba(255,255,255,0.48);
+      font-size: 18px;
+      line-height: 1;
+      cursor: pointer;
+    }
+    #help-tip .help-tip-x:hover { color: #fff; }
+    @media (max-width: 720px) {
+      #help-bubble {
+        right: 10px;
+        bottom: calc(env(safe-area-inset-bottom, 0) + 84px);
+        width: 38px;
+        height: 38px;
+        font-size: 17px;
+      }
+      #help-popover,
+      #help-tip {
+        right: 10px;
+        width: calc(100vw - 20px);
+      }
+      #help-popover { bottom: 132px; }
+      #help-tip { bottom: 176px; }
+    }
+
     /* Canvas transition overlay (player switch) */
     #transition-overlay {
       position: fixed;
@@ -931,41 +1245,121 @@
     .anim-right { animation: fadeInRight 0.4s ease-out 0.10s both; }
     .anim-up    { animation: fadeInUp    0.4s ease-out 0.15s both; }
 
+    /* Compact native dropdown used in place of the speed/camera pill rows
+       when the right HUD doesn't have room. Visible only via media queries. */
+    .cfg-select {
+      display: none;
+      appearance: none;
+      -webkit-appearance: none;
+      background: rgba(255,255,255,0.05) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='rgba(255,255,255,0.55)'/%3E%3C/svg%3E") no-repeat right 9px center;
+      border: 1px solid rgba(255,255,255,0.10);
+      border-radius: 7px;
+      color: #fff;
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 11.5px;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      padding: 6px 24px 6px 11px;
+      cursor: pointer;
+      transition: border-color 0.15s, background-color 0.15s;
+    }
+    .cfg-select:hover  { background-color: rgba(255,255,255,0.08); border-color: rgba(255,255,255,0.18); }
+    .cfg-select:focus  { outline: none; border-color: rgba(var(--accent-rgb), 0.6); }
+    .cfg-select option { background: #11151f; color: #fff; }
+
+    /* ── Narrower desktops ─────────────────────────────────────────
+       Right HUD is wide (Player + Filter + Speed + Camera + Arena). Below
+       ~1400 px the inline pill rows for SPEED and CAMERA get swapped for
+       compact native dropdowns so the bar stays on one row. */
+    @media (max-width: 1400px) {
+      #speed-pills, #camera-pills { display: none; }
+      #speed-select, #camera-select { display: inline-block; }
+    }
+    @media (min-width: 721px) and (max-width: 1400px) {
+      .cfg-sec { padding: 0 14px; }
+    }
+
     /* ── Mobile layout ───────────────────────────────────────────── */
     @media (max-width: 720px) {
       .hud-card { height: 56px; border-radius: 10px; }
 
       #ctrl-left { left: 10px; right: 10px; top: 10px; justify-content: center; padding-left: 4px; }
       #ctrl-left::before { left: 0; top: 10px; bottom: 10px; }
-      #brand { padding: 0 14px; gap: 3px; }
+      #brand { padding: 0 14px; gap: 3px; min-width: 0; flex: 1; }
       #brand-eyebrow { font-size: 8.5px; }
       #brand-title { font-size: 14px; }
-      #brand-player { font-size: 9.5px; }
+      #brand-player { font-size: 9.5px; overflow: hidden; text-overflow: ellipsis; }
 
-      #playback { padding: 0 12px; gap: 6px; }
+      #playback { padding: 0 12px; gap: 6px; flex-shrink: 0; }
       #btnPlay { padding: 0 14px; height: 32px; font-size: 11px; letter-spacing: 0.10em; }
       .icon-btn { width: 32px; height: 32px; font-size: 14px; }
 
+      /* Right HUD becomes a vertical column on mobile — every section visible. */
       #ctrl-right {
         left: 10px; right: 10px; top: 76px;
-        overflow-x: auto; overflow-y: hidden;
-        -webkit-overflow-scrolling: touch;
-        justify-content: flex-start;
+        height: auto;
+        flex-direction: column;
+        align-items: stretch;
+        overflow: visible;
+        padding: 4px 0;
       }
-      .cfg-sec { padding: 0 12px; gap: 4px; flex-shrink: 0; }
-      .cfg-lbl { font-size: 8.5px; }
-      .player-trigger { min-width: 100px; max-width: 130px; }
-      .player-trigger-name { font-size: 12px; }
-      .filter-summary { font-size: 11px; }
-      .pill-btn { padding: 3px 8px; font-size: 10px; }
-      .speed-pills .pill-btn { padding: 3px 6px; font-size: 10px; }
-      .arena-wrap { padding: 0 12px; flex-shrink: 0; }
-
-      #filter-panel {
-        left: 10px; right: 10px; top: 142px;
+      #ctrl-right .card-div { display: none; }
+      #ctrl-right > .cfg-sec,
+      #ctrl-right > .arena-wrap {
         width: auto;
+        height: auto;
+        flex-direction: row;
+        align-items: center;
+        justify-content: space-between;
+        padding: 9px 14px;
+        gap: 10px;
+        border-bottom: 1px solid rgba(255,255,255,0.05);
+      }
+      #ctrl-right > .cfg-sec:last-child,
+      #ctrl-right > .arena-wrap:last-child { border-bottom: none; }
+      #ctrl-right .cfg-lbl,
+      #ctrl-right .cfg-lbl-row {
+        font-size: 9px;
+        letter-spacing: 0.20em;
+        flex-shrink: 0;
+        width: 56px;
+      }
+      .player-trigger {
+        min-width: 0;
+        max-width: none;
+        flex: 1;
+        justify-content: flex-end;
+      }
+      .player-trigger-name { font-size: 12.5px; }
+      .filter-trigger { flex: 1; justify-content: flex-end; }
+      .filter-summary { font-size: 11.5px; }
+
+      /* SPEED / CAMERA selects (swapped in by the < 1400 px rule) — fit on
+         the right of each row and don't crowd the label. */
+      #ctrl-right .cfg-select {
+        width: auto;
+        min-width: 120px;
+        max-width: 50%;
+        font-size: 12px;
+        padding: 7px 26px 7px 12px;
+        background-position: right 10px center;
+      }
+
+      /* Arena toggle hidden on mobile — arena stays on by default
+         (the preceding .card-div is already hidden by the rule above). */
+      #ctrl-right > .arena-wrap { display: none; }
+
+      /* Filter panel docks just above the stats footer on mobile (clear of the
+         taller right HUD). */
+      #filter-panel {
+        left: 10px; right: 10px;
+        top: auto; bottom: calc(env(safe-area-inset-bottom, 0) + 110px);
+        width: auto;
+        max-height: 60vh;
+        overflow-y: auto;
       }
       .filter-row { grid-template-columns: 60px 1fr; gap: 8px; padding: 7px 0; }
+      #filter-panel [data-filter-group="period"] .pill-btn { padding: 7px 6px; }
 
       #stats {
         left: 10px; right: 10px; bottom: 10px;
@@ -978,7 +1372,7 @@
       .stat-zone-val { font-size: 13px; }
       .stat-lbl { font-size: 8px; letter-spacing: 0.16em; }
 
-
+      /* ── Player picker on mobile ─────────────────────────────── */
       #picker-card {
         width: calc(100vw - 20px);
         max-height: calc(100vh - 20px);
@@ -990,13 +1384,43 @@
       #picker-title { font-size: 20px; }
       #picker-search-wrap { padding: 12px 18px 8px; }
       #picker-search-icon { left: 32px; }
-      #picker-filters { padding: 10px 18px; gap: 8px; }
-      .pf-select { font-size: 11px; padding: 5px 22px 5px 8px; }
+      /* Filters: 3-col grid. SORT spans the full bottom row.
+         Total height ≈ 3 rows so the player grid gets more vertical room. */
+      #picker-filters {
+        display: grid;
+        grid-template-columns: 1fr 1fr 1fr;
+        gap: 8px 8px;
+        padding: 10px 14px;
+      }
+      .pf-group {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 3px;
+        min-width: 0;
+      }
+      .pf-lbl { font-size: 8.5px; letter-spacing: 0.16em; }
+      .pf-select {
+        width: 100%;
+        min-width: 0;
+        font-size: 11.5px;
+        padding: 6px 22px 6px 8px;
+        background-position: right 8px center;
+      }
+      #picker-filters .pf-group:last-child { grid-column: 1 / -1; }
       #picker-results { padding: 12px 14px 16px; }
       #picker-grid { grid-template-columns: repeat(2, 1fr); gap: 8px; }
       .pp-card { padding: 10px 11px; }
       .pp-card-name { font-size: 12.5px; }
       .pp-stat-v { font-size: 12px; }
+    }
+
+    /* Narrower phones: scale down slightly more. */
+    @media (max-width: 380px) {
+      #ctrl-right .cfg-lbl,
+      #ctrl-right .cfg-lbl-row { width: 48px; font-size: 8.5px; }
+      .speed-pills .pill-btn { padding: 4px 6px; font-size: 9.5px; }
+      #camera-pills .pill-btn { padding: 4px 5px; font-size: 9px; }
+      .pf-select { font-size: 11.5px; padding: 6px 24px 6px 9px; }
     }
   </style>
 </head>
@@ -1043,19 +1467,44 @@
   <div class="card-div"></div>
   <div class="cfg-sec">
     <span class="cfg-lbl">Speed</span>
-    <div class="speed-pills" id="speed-pills">
-      <button class="pill-btn" data-speed="0.5">0.5×</button>
-      <button class="pill-btn active" data-speed="1">1×</button>
-      <button class="pill-btn" data-speed="2">2×</button>
-      <button class="pill-btn" data-speed="5">5×</button>
-      <button class="pill-btn" data-speed="10">10×</button>
+    <div class="speed-pills" id="speed-pills" role="radiogroup" aria-label="Animation speed">
+      <button class="pill-btn" data-speed="0.5" role="radio" aria-checked="false">0.5×</button>
+      <button class="pill-btn active" data-speed="1" role="radio" aria-checked="true">1×</button>
+      <button class="pill-btn" data-speed="2" role="radio" aria-checked="false">2×</button>
+      <button class="pill-btn" data-speed="5" role="radio" aria-checked="false">5×</button>
+      <button class="pill-btn" data-speed="10" role="radio" aria-checked="false">10×</button>
     </div>
+    <select class="cfg-select" id="speed-select" aria-label="Animation speed">
+      <option value="0.5">0.5×</option>
+      <option value="1" selected>1×</option>
+      <option value="2">2×</option>
+      <option value="5">5×</option>
+      <option value="10">10×</option>
+    </select>
+  </div>
+  <div class="card-div"></div>
+  <div class="cfg-sec">
+    <span class="cfg-lbl">Camera</span>
+    <div class="speed-pills" id="camera-pills" role="radiogroup" aria-label="Camera view">
+      <button class="pill-btn active" data-cam="broadcast" role="radio" aria-checked="true" title="Broadcast view">BCAST</button>
+      <button class="pill-btn" data-cam="sideline"  role="radio" aria-checked="false" title="Sideline view">SIDE</button>
+      <button class="pill-btn" data-cam="top"       role="radio" aria-checked="false" title="Top-down view">TOP</button>
+      <button class="pill-btn" data-cam="pan"       role="radio" aria-checked="false" title="Auto-rotate / panning">PAN</button>
+      <button class="pill-btn" data-cam="free"      role="radio" aria-checked="false" title="Free orbit">FREE</button>
+    </div>
+    <select class="cfg-select" id="camera-select" aria-label="Camera view">
+      <option value="broadcast" selected>Broadcast</option>
+      <option value="sideline">Sideline</option>
+      <option value="top">Top-down</option>
+      <option value="pan">Pan / Auto</option>
+      <option value="free">Free</option>
+    </select>
   </div>
   <div class="card-div"></div>
   <label class="arena-wrap">
     <span class="cfg-lbl">Arena</span>
     <div class="toggle-sw">
-      <input type="checkbox" id="chkArena" checked />
+      <input type="checkbox" id="chkArena" aria-label="Toggle arena visibility" checked />
       <span class="toggle-track"></span>
     </div>
   </label>
@@ -1065,34 +1514,34 @@
 <div id="filter-panel">
   <div class="filter-row">
     <span class="filter-row-lbl">Result</span>
-    <div class="pill-group" data-filter-group="result">
-      <button class="pill-btn active active-made" data-result="made">Made</button>
-      <button class="pill-btn active active-miss" data-result="miss">Missed</button>
+    <div class="pill-group" data-filter-group="result" role="group" aria-label="Shot result">
+      <button class="pill-btn active active-made" data-result="made" aria-pressed="true">Made</button>
+      <button class="pill-btn active active-miss" data-result="miss" aria-pressed="true">Missed</button>
     </div>
   </div>
   <div class="filter-row">
     <span class="filter-row-lbl">Type</span>
-    <div class="pill-group" data-filter-group="type">
-      <button class="pill-btn active" data-type="2PT">2PT</button>
-      <button class="pill-btn active" data-type="3PT">3PT</button>
+    <div class="pill-group" data-filter-group="type" role="group" aria-label="Shot type">
+      <button class="pill-btn active" data-type="2PT" aria-pressed="true">2PT</button>
+      <button class="pill-btn active" data-type="3PT" aria-pressed="true">3PT</button>
     </div>
   </div>
   <div class="filter-row">
     <span class="filter-row-lbl">Zone</span>
-    <div class="pill-group" data-filter-group="zone">
-      <button class="pill-btn active" data-zone="paint">Paint</button>
-      <button class="pill-btn active" data-zone="mid">Mid</button>
-      <button class="pill-btn active" data-zone="three">3PT</button>
+    <div class="pill-group" data-filter-group="zone" role="group" aria-label="Shot zone">
+      <button class="pill-btn active" data-zone="paint" aria-pressed="true">Paint</button>
+      <button class="pill-btn active" data-zone="mid" aria-pressed="true">Mid</button>
+      <button class="pill-btn active" data-zone="three" aria-pressed="true">3PT</button>
     </div>
   </div>
   <div class="filter-row">
     <span class="filter-row-lbl">Quarter</span>
-    <div class="pill-group" data-filter-group="period">
-      <button class="pill-btn active" data-period="1">Q1</button>
-      <button class="pill-btn active" data-period="2">Q2</button>
-      <button class="pill-btn active" data-period="3">Q3</button>
-      <button class="pill-btn active" data-period="4">Q4</button>
-      <button class="pill-btn active" data-period="5">OT</button>
+    <div class="pill-group" data-filter-group="period" role="group" aria-label="Quarter">
+      <button class="pill-btn active" data-period="1" aria-pressed="true">Q1</button>
+      <button class="pill-btn active" data-period="2" aria-pressed="true">Q2</button>
+      <button class="pill-btn active" data-period="3" aria-pressed="true">Q3</button>
+      <button class="pill-btn active" data-period="4" aria-pressed="true">Q4</button>
+      <button class="pill-btn active" data-period="5" aria-pressed="true">OT</button>
     </div>
   </div>
   <div id="filter-warning">No shots match the current filters.</div>
@@ -1101,6 +1550,9 @@
     <button id="filter-apply" class="fp-action fp-action-primary" disabled>Apply</button>
   </div>
 </div>
+
+<!-- Shot tooltip (shown when clicking a floor marker) -->
+<div id="shot-tooltip" aria-live="polite"></div>
 
 <!-- Stats footer -->
 <div id="stats" class="hidden anim-up">
@@ -1132,6 +1584,27 @@
     <div class="stat-val" id="statMissN">0</div>
     <div class="stat-lbl">Missed</div>
   </div>
+</div>
+
+<button id="help-bubble" type="button" aria-label="Open help" aria-expanded="false" aria-controls="help-popover">?</button>
+<div id="help-tip" role="status" aria-live="polite" aria-label="Getting started hint" hidden>
+  <button class="help-tip-x" type="button" aria-label="Dismiss hint">×</button>
+  <div class="help-tip-title">Need help?</div>
+  <div class="help-tip-body">Tap the `?` for a quick guide to players, filters, camera, and shot markers.</div>
+</div>
+<div id="help-popover" role="dialog" aria-modal="false" aria-labelledby="help-title" hidden>
+  <div class="help-head">
+    <div class="help-title" id="help-title">How to use</div>
+    <button class="help-close" type="button" aria-label="Close help">×</button>
+  </div>
+  <div class="help-step"><span class="help-step-num">1</span><span>Pick a player, then press <strong>Play</strong> or <strong>Replay</strong>.</span></div>
+  <div class="help-step"><span class="help-step-num">2</span><span>Use <strong>Filters</strong> and tap <strong>Apply</strong> to change the shot sequence.</span></div>
+  <div class="help-step"><span class="help-step-num">3</span><span>Switch camera presets or tap the progress bar to scrub through the filtered shots.</span></div>
+  <div class="help-legend">
+    <span class="help-chip made">Made = green dot</span>
+    <span class="help-chip miss">Miss = red X</span>
+  </div>
+  <div class="help-foot">Click a marker for distance, quarter, and shot type. Shortcuts: Space play/pause, R replay, Esc close.</div>
 </div>
 
 <!-- Player picker / welcome screen -->
@@ -1244,7 +1717,11 @@ window.addEventListener('unhandledrejection', function(e) {
 <script type="module">
 import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
-import { ROSTER } from './data/roster.js';
+
+const DATA_VERSION = String(Date.now());
+const rosterUrl = new URL('./data/roster.js', import.meta.url);
+rosterUrl.searchParams.set('v', DATA_VERSION);
+const { ROSTER } = await import(rosterUrl.href);
 
 // ---------------------------------------------------------------------------
 // Shot data — loaded dynamically per player
@@ -1535,6 +2012,12 @@ function buildBasket() {
   net.position.set(0, HOOP_Y - 0.75, HOOP_Z);
   scene.add(net);
 
+  // Module-level refs for landing-time animation (swish, rim shake).
+  hoopMesh = hoop;
+  netMesh  = net;
+  hoopBaseY = HOOP_Y;
+  netBaseY  = net.position.y;
+
   // Base pad
   box(2, 0.4, 2, 0, 0.2, POLE_Z, metalMat);
 }
@@ -1542,14 +2025,39 @@ function buildBasket() {
 // ---------------------------------------------------------------------------
 // Arena + crowd
 // ---------------------------------------------------------------------------
-function updateCrowdColors(hexColor) {
+// NBA team secondary colors keyed by abbreviation. Used to color a slice of the
+// crowd a different team color than the primary jersey color.
+const TEAM_SECONDARY = {
+  ATL: 0xFDB927, BOS: 0xBB9753, BKN: 0xCCCCCC, CHA: 0x00788C, CHI: 0x000000,
+  CLE: 0xFDBB30, DAL: 0xB8C4CA, DEN: 0xFEC524, DET: 0x1D42BA, GSW: 0xFFC72C,
+  HOU: 0xC4CED4, IND: 0xFDBB30, LAC: 0x1D428A, LAL: 0xFDB927, MEM: 0xFFD432,
+  MIA: 0xF9A01B, MIL: 0xEEE1C6, MIN: 0x78BE20, NOP: 0x85714D, NYK: 0xF58426,
+  OKC: 0xEF3B24, ORL: 0x000000, PHI: 0xED174C, PHX: 0xE56020, POR: 0x000000,
+  SAC: 0x63727A, SAS: 0x000000, TOR: 0x000000, UTA: 0xF9A01B, WAS: 0xE31837,
+};
+
+function getTeamSecondary(teamAbbr, primaryHex) {
+  const s = TEAM_SECONDARY[teamAbbr];
+  if (s !== undefined) return s;
+  // Fallback: mix primary with white to get a brighter complement.
+  const r = (primaryHex >> 16) & 0xff;
+  const g = (primaryHex >> 8) & 0xff;
+  const b = primaryHex & 0xff;
+  const mix = 0.55;
+  const nr = Math.round(r + (255 - r) * mix);
+  const ng = Math.round(g + (255 - g) * mix);
+  const nb = Math.round(b + (255 - b) * mix);
+  return (nr << 16) | (ng << 8) | nb;
+}
+
+function updateCrowdColors(primaryHex, secondaryHex) {
   if (!crowdMesh) return;
-  const accentC = new THREE.Color(hexColor);
-  const lightC  = new THREE.Color(0xf0e8e0);
-  const darkC   = new THREE.Color(0x2a2a3a);
+  const accentC    = new THREE.Color(primaryHex);
+  const secondaryC = new THREE.Color(secondaryHex ?? 0xf0e8e0);
+  const darkC      = new THREE.Color(0x2a2a3a);
   for (let i = 0; i < crowdMesh.count; i++) {
     if (crowdTypes[i] === 0)      crowdMesh.setColorAt(i, accentC);
-    else if (crowdTypes[i] === 1) crowdMesh.setColorAt(i, lightC);
+    else if (crowdTypes[i] === 1) crowdMesh.setColorAt(i, secondaryC);
     else                          crowdMesh.setColorAt(i, darkC);
   }
   crowdMesh.instanceColor.needsUpdate = true;
@@ -1655,7 +2163,7 @@ function buildArena() {
     crowdBaseMatrices[i] = _snap.clone();
   }
 
-  if (currentPlayer) updateCrowdColors(currentPlayer.color);
+  if (currentPlayer) updateCrowdColors(currentPlayer.color, getTeamSecondary(currentPlayer.team, currentPlayer.color));
 }
 
 function triggerCrowdJump() {
@@ -1906,9 +2414,63 @@ function fireShotAt(idx, instant = false) {
 }
 
 // ---------------------------------------------------------------------------
-// Landing effects  (made splash rings, miss bounce ball)
+// Landing effects  (made splash rings, miss bounce ball, net/rim animations)
 // ---------------------------------------------------------------------------
 const splashEffects = [];
+
+// Net-swish + rim-shake state. Refs assigned in buildBasket().
+let hoopMesh = null;
+let netMesh  = null;
+let hoopBaseY = HOOP_Y;
+let netBaseY  = HOOP_Y - 0.75;
+const basketEffects = []; // { type: 'swish'|'shake', t: 0, dur, strength }
+
+function triggerNetSwish() {
+  if (!netMesh) return;
+  basketEffects.push({ type: 'swish', t: 0, dur: 0.45 });
+}
+
+function triggerRimShake(strength = 1) {
+  if (!hoopMesh) return;
+  basketEffects.push({ type: 'shake', t: 0, dur: 0.28, strength: Math.min(strength, 1.6) });
+}
+
+function updateBasketEffects(dt) {
+  // The net cylinder has half-height 0.75 ft and is centered at netBaseY = HOOP_Y - 0.75.
+  // To keep the TOP of the net anchored to the rim while we scale Y, the center must
+  // ride down by (scale.y * 0.75) — top stays at HOOP_Y.
+  if (basketEffects.length === 0) {
+    if (netMesh)  { netMesh.scale.set(1, 1, 1); netMesh.position.y = netBaseY; }
+    if (hoopMesh) { hoopMesh.scale.set(1, 1, 1); hoopMesh.position.y = hoopBaseY; }
+    return;
+  }
+  let netSY = 1, netSXZ = 1, rimDy = 0, rimSXZ = 1;
+  for (let i = basketEffects.length - 1; i >= 0; i--) {
+    const ef = basketEffects[i];
+    ef.t += dt;
+    const p = ef.t / ef.dur;
+    if (p >= 1) { basketEffects.splice(i, 1); continue; }
+    if (ef.type === 'swish') {
+      // Damped ring: net briefly stretches downward, slight radial bulge, settles.
+      const decay = Math.exp(-3.0 * p);
+      const phase = 2 * Math.PI * 1.6 * p;
+      netSY  += 0.18 * Math.sin(phase)        * decay;
+      netSXZ += 0.06 * Math.cos(phase * 1.2)  * decay;
+    } else if (ef.type === 'shake') {
+      const damp = Math.exp(-5 * p);
+      rimDy  += 0.035 * ef.strength * damp * Math.sin(2 * Math.PI * 7 * p);
+      rimSXZ += 0.015 * ef.strength * damp * Math.cos(2 * Math.PI * 5 * p);
+    }
+  }
+  if (netMesh) {
+    netMesh.scale.set(netSXZ, netSY, netSXZ);
+    netMesh.position.y = HOOP_Y - 0.75 * netSY;   // top edge stays at HOOP_Y
+  }
+  if (hoopMesh) {
+    hoopMesh.scale.set(rimSXZ, 1, rimSXZ);
+    hoopMesh.position.y = hoopBaseY + rimDy;
+  }
+}
 
 function addMadeSplash(shotIdx) {
   for (let i = 0; i < 2; i++) {
@@ -2036,6 +2598,7 @@ function resetAll() {
   document.getElementById('statThreePct').textContent = '—';
   shotQueue = [...filteredIndices()];
   queueTimer = 0;
+  hideShotTooltip();
 }
 
 // ---------------------------------------------------------------------------
@@ -2053,13 +2616,28 @@ function parabola(p0, p1, maxH, t) {
 // Render loop
 // ---------------------------------------------------------------------------
 let lastTime = null;
+const progressBarEl = document.getElementById('progress-bar');
+const progressThumbEl = document.getElementById('progress-thumb');
 
 function tick(now) {
   requestAnimationFrame(tick);
   const dt = lastTime == null ? 0 : Math.min((now - lastTime) / 1000, 0.1);
   lastTime = now;
 
-  controls.update();
+  // Camera preset tween: linear lerp on position + target, quaternion slerp on
+  // orientation. We skip controls.update() during the tween so it doesn't lookAt()
+  // over our slerped quaternion — it resumes normally on the next frame.
+  if (cameraTween) {
+    cameraTween.t += dt;
+    const p = Math.min(cameraTween.t / cameraTween.dur, 1);
+    const eased = 1 - Math.pow(1 - p, 3); // easeOutCubic
+    camera.position.lerpVectors(cameraTween.fromPos, cameraTween.toPos, eased);
+    controls.target.lerpVectors(cameraTween.fromTar, cameraTween.toTar, eased);
+    camera.quaternion.slerpQuaternions(cameraTween.fromQuat, cameraTween.toQuat, eased);
+    if (p >= 1) { cameraTween = null; cameraTweenActive = false; }
+  } else {
+    controls.update();
+  }
 
   if (playing) {
     queueTimer -= dt * speed;
@@ -2078,8 +2656,21 @@ function tick(now) {
       if (s.made) madeCount++; else missCount++;
       refreshStats();
       updateZoneStats(s.zone, s.made);
-      if (s.made) { if (filters.result.has('made')) { triggerCrowdJump(); addMadeSplash(s.idx); } }
-      else         { if (filters.result.has('miss')) addMissBounce(s.end, s.idx); }
+      if (s.made) {
+        if (filters.result.has('made')) {
+          triggerCrowdJump();
+          addMadeSplash(s.idx);
+          triggerNetSwish();
+        }
+      } else {
+        if (filters.result.has('miss')) {
+          addMissBounce(s.end, s.idx);
+          // Strength scales with how close the miss landed to the rim.
+          const dxz = Math.hypot(s.end.x, s.end.z - HOOP_Z);
+          const closeness = Math.max(0, 1 - dxz / 2.0);
+          triggerRimShake(0.5 + closeness);
+        }
+      }
       scene.remove(s.ball);
       scene.remove(s.trailMesh); s.trailGeo.dispose(); s.trailMat.dispose();
       scene.remove(s.ballLight);
@@ -2183,6 +2774,12 @@ function tick(now) {
     }
   }
 
+  // Net swish + rim shake
+  updateBasketEffects(dt);
+
+  // Keep the shot tooltip anchored to its marker as the camera moves.
+  updateShotTooltipPosition();
+
   if (playing && shots.length > 0 && shotQueue.length === 0 && activeShots.every((s) => s.done)) {
     playing = false;
     sequenceDone = true;
@@ -2194,11 +2791,11 @@ function tick(now) {
   const totalFiltered = firedSet.size + shotQueue.length;
   if (totalFiltered > 0) {
     const pct = Math.min(100, (firedSet.size / totalFiltered) * 100);
-    document.getElementById('progress-bar').style.width = pct + '%';
-    document.getElementById('progress-thumb').style.left = pct + '%';
+    progressBarEl.style.width = pct + '%';
+    progressThumbEl.style.left = pct + '%';
   } else {
-    document.getElementById('progress-bar').style.width = '0%';
-    document.getElementById('progress-thumb').style.left = '0%';
+    progressBarEl.style.width = '0%';
+    progressThumbEl.style.left = '0%';
   }
 
   renderer.render(scene, camera);
@@ -2208,6 +2805,63 @@ function tick(now) {
 // UI
 // ---------------------------------------------------------------------------
 const btnPlay = document.getElementById('btnPlay');
+const helpBubbleEl = document.getElementById('help-bubble');
+const helpPopoverEl = document.getElementById('help-popover');
+const helpTipEl = document.getElementById('help-tip');
+const helpTipCloseEl = helpTipEl.querySelector('.help-tip-x');
+const helpPopoverCloseEl = helpPopoverEl.querySelector('.help-close');
+const HELP_TIP_KEY = 'shotchart-help-tip-seen-v1';
+
+function safeGetStorageItem(key) {
+  try { return localStorage.getItem(key); } catch { return null; }
+}
+
+function safeSetStorageItem(key, value) {
+  try { localStorage.setItem(key, value); } catch { /* ignore */ }
+}
+
+function openHelp() {
+  helpPopoverEl.hidden = false;
+  requestAnimationFrame(() => helpPopoverEl.classList.add('open'));
+  helpBubbleEl.setAttribute('aria-expanded', 'true');
+}
+
+function closeHelp() {
+  helpPopoverEl.classList.remove('open');
+  helpBubbleEl.setAttribute('aria-expanded', 'false');
+  setTimeout(() => {
+    if (!helpPopoverEl.classList.contains('open')) helpPopoverEl.hidden = true;
+  }, 180);
+}
+
+function hideHelpTip(markSeen = true) {
+  if (markSeen) safeSetStorageItem(HELP_TIP_KEY, '1');
+  helpTipEl.classList.remove('show');
+  setTimeout(() => {
+    if (!helpTipEl.classList.contains('show')) helpTipEl.hidden = true;
+  }, 180);
+}
+
+function showHelpTip() {
+  if (safeGetStorageItem(HELP_TIP_KEY) === '1') return;
+  helpTipEl.hidden = false;
+  requestAnimationFrame(() => helpTipEl.classList.add('show'));
+  setTimeout(() => {
+    if (!helpTipEl.hidden) hideHelpTip(true);
+  }, 8000);
+}
+
+helpBubbleEl.addEventListener('click', () => {
+  if (helpPopoverEl.hidden) openHelp();
+  else closeHelp();
+});
+helpPopoverCloseEl.addEventListener('click', closeHelp);
+helpTipCloseEl.addEventListener('click', () => hideHelpTip(true));
+helpTipEl.addEventListener('click', (e) => {
+  if (e.target === helpTipCloseEl) return;
+  hideHelpTip(true);
+  openHelp();
+});
 
 function setPlayButton(state) {
   // state: 'play' | 'pause' | 'replay' | 'disabled'
@@ -2239,40 +2893,127 @@ document.getElementById('btnReplay').addEventListener('click', () => {
   setPlayButton('pause');
 });
 
-// Speed pill toggles
+// Speed pill toggles (keeps the dropdown in sync at narrower widths).
+const speedSelectEl = document.getElementById('speed-select');
 document.querySelectorAll('#speed-pills .pill-btn').forEach((btn) => {
   btn.addEventListener('click', () => {
-    document.querySelectorAll('#speed-pills .pill-btn').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('#speed-pills .pill-btn').forEach(b => {
+      b.classList.remove('active');
+      b.setAttribute('aria-checked', 'false');
+    });
     btn.classList.add('active');
+    btn.setAttribute('aria-checked', 'true');
     speed = parseFloat(btn.dataset.speed);
+    speedSelectEl.value = btn.dataset.speed;
   });
 });
+speedSelectEl.addEventListener('change', (e) => {
+  const btn = document.querySelector(`#speed-pills .pill-btn[data-speed="${e.target.value}"]`);
+  if (btn) btn.click();
+});
+
+// ── Camera presets + pan ───────────────────────────────────────────
+const CAMERA_PRESETS = {
+  broadcast: { pos: new THREE.Vector3(0,  22, -82),         target: new THREE.Vector3(0, 4, HOOP_Z) },
+  // Sideline: doubled height (18 → 36) + steeper look-down for a clear upper-bowl angle.
+  sideline:  { pos: new THREE.Vector3(70, 36,  HOOP_Z),     target: new THREE.Vector3(0, 6, HOOP_Z) },
+  // Top: aim target deep into the court so the rim sits in the bottom ~80% of frame.
+  top:       { pos: new THREE.Vector3(0,  72,  HOOP_Z + 5), target: new THREE.Vector3(0, 0, -18) },
+};
+let cameraTween = null;        // { fromPos, toPos, fromTar, toTar, fromQuat, toQuat, t, dur }
+let cameraTweenActive = false; // suppresses user-drag 'free' switch during a tween
+
+function setCameraMode(mode) {
+  document.querySelectorAll('#camera-pills .pill-btn').forEach(b => {
+    const on = b.dataset.cam === mode;
+    b.classList.toggle('active', on);
+    b.setAttribute('aria-checked', on ? 'true' : 'false');
+  });
+  const cameraSelectEl = document.getElementById('camera-select');
+  if (cameraSelectEl) cameraSelectEl.value = mode;
+  if (mode === 'pan') {
+    controls.autoRotate = true;
+    controls.autoRotateSpeed = 1;
+    cameraTween = null;
+    cameraTweenActive = false;
+    return;
+  }
+  controls.autoRotate = false;
+  if (mode === 'free') { cameraTween = null; cameraTweenActive = false; return; }
+  const p = CAMERA_PRESETS[mode];
+  if (!p) return;
+
+  // Tween:
+  //   • position + target: simple linear lerp (camera translates from A to B).
+  //   • orientation: quaternion slerp between the start pose and the destination
+  //     pose. Doing orientation explicitly (instead of letting lookAt derive it)
+  //     keeps screen orientation continuous when the camera passes near the +Y
+  //     pole, e.g. BCAST → TOP where both endpoints lie in the YZ plane and the
+  //     azimuth derived from lookAt would otherwise flip by π in a single frame.
+  _tweenScratchCam.position.copy(p.pos);
+  _tweenScratchCam.up.copy(camera.up);
+  _tweenScratchCam.lookAt(p.target);
+
+  cameraTween = {
+    fromPos: camera.position.clone(),
+    toPos:   p.pos.clone(),
+    fromTar: controls.target.clone(),
+    toTar:   p.target.clone(),
+    fromQuat: camera.quaternion.clone(),
+    toQuat:   _tweenScratchCam.quaternion.clone(),
+    t: 0, dur: 0.9,
+  };
+  cameraTweenActive = true;
+}
+
+const _tweenScratchCam = new THREE.PerspectiveCamera();
+
+document.querySelectorAll('#camera-pills .pill-btn').forEach(b => {
+  b.addEventListener('click', () => setCameraMode(b.dataset.cam));
+});
+document.getElementById('camera-select').addEventListener('change', (e) => {
+  setCameraMode(e.target.value);
+});
+
+// Any direct user interaction with the canvas drops us back to FREE
+// (unless we're in the middle of an automated tween).
+controls.addEventListener('start', () => {
+  if (cameraTweenActive) return;
+  const active = document.querySelector('#camera-pills .pill-btn.active');
+  if (active && active.dataset.cam !== 'free') setCameraMode('free');
+});
+
+// Module-level so keyboard shortcuts can call it too.
+function seekTo(fraction) {
+  if (!shots.length) return;
+  const filtered = filteredIndices();
+  if (filtered.length === 0) return;
+  const wasPlaying = playing;
+  playing = false;
+  resetAll();
+  const targetCount = Math.max(0, Math.min(filtered.length, Math.floor(fraction * filtered.length)));
+  for (let k = 0; k < targetCount; k++) fireShotAt(filtered[k], true);
+  shotQueue = filtered.slice(targetCount);
+  sequenceDone = false;
+  if (shotQueue.length > 0) {
+    playing = wasPlaying;
+    setPlayButton(playing ? 'pause' : 'play');
+  } else {
+    playing = false;
+    setPlayButton('replay');
+  }
+}
+
+function currentSeekFraction() {
+  const total = firedSet.size + shotQueue.length;
+  return total > 0 ? firedSet.size / total : 0;
+}
 
 // ── Scrubbable progress bar (desktop) ──────────────────────────────
 {
   const track = document.getElementById('progress-track');
   const isDesktop = () => window.matchMedia('(min-width: 721px)').matches;
   let dragging = false;
-
-  function seekTo(fraction) {
-    if (!shots.length) return;
-    const filtered = filteredIndices();
-    if (filtered.length === 0) return;
-    const wasPlaying = playing;
-    playing = false;
-    resetAll();
-    const targetCount = Math.max(0, Math.min(filtered.length, Math.floor(fraction * filtered.length)));
-    for (let k = 0; k < targetCount; k++) fireShotAt(filtered[k], true);
-    shotQueue = filtered.slice(targetCount);
-    sequenceDone = false;
-    if (shotQueue.length > 0) {
-      playing = wasPlaying || true;
-      setPlayButton(playing ? 'pause' : 'play');
-    } else {
-      playing = false;
-      setPlayButton('replay');
-    }
-  }
 
   function fractionFromEvent(e) {
     const rect = track.getBoundingClientRect();
@@ -2330,29 +3071,6 @@ function restartAnimation() {
   }, 160);
 }
 
-function shotVisibleByActive(e) {
-  // For an active (in-flight or landed) shot effect, return whether its dot/ball should be visible.
-  return e.made ? filters.result.has('made') : filters.result.has('miss');
-}
-
-function applyFilterVisibility() {
-  for (const e of activeShots) {
-    const show = shotVisibleByActive(e);
-    if (e.dotDot) e.dotDot.visible = show;
-    if (e.dotRing) e.dotRing.visible = show;
-    if (!e.done) {
-      e.ball.visible = show;
-      e.trailMesh.visible = show;
-      e.ballLight.visible = show;
-    }
-  }
-  for (const ef of splashEffects) {
-    const show = ef.type === 'made' ? filters.result.has('made') : filters.result.has('miss');
-    if (ef.type === 'made') ef.mesh.visible = show;
-    else { ef.ball.visible = show; ef.ripple.visible = show; }
-  }
-}
-
 // ── Filter panel (multi-dim, with Apply/Reset) ───────────────────
 const filterPanel = document.getElementById('filter-panel');
 const filterTriggerSec = document.getElementById('filter-trigger-sec');
@@ -2398,7 +3116,9 @@ function syncPillsToPending() {
     else if (group === 'zone')   on = pendingFilters.zone.has(btn.dataset.zone);
     else if (group === 'period') on = pendingFilters.period.has(parseInt(btn.dataset.period, 10));
     btn.classList.toggle('active', on);
+    btn.setAttribute('aria-pressed', on ? 'true' : 'false');
   });
+  if (typeof updateConflictingPills === 'function') updateConflictingPills();
 }
 
 function updateApplyState() {
@@ -2420,13 +3140,48 @@ document.addEventListener('click', (e) => {
   }
 });
 
+// 2PT shots only live in paint/mid; 3PT shots only in the three zone.
+// Recompute the disabled state of type/zone pills against pending selection;
+// remove any conflicting pills from pendingFilters as we go.
+function updateConflictingPills() {
+  const t = pendingFilters.type;
+  const z = pendingFilters.zone;
+  const twoOnly   = t.has('2PT') && !t.has('3PT');
+  const threeOnly = t.has('3PT') && !t.has('2PT');
+  const zoneOnlyThree = z.has('three') && !z.has('paint') && !z.has('mid');
+  const zoneNoThree   = !z.has('three') && (z.has('paint') || z.has('mid'));
+
+  const disableMap = new Map([
+    [['data-zone', 'three'], twoOnly],
+    [['data-zone', 'paint'], threeOnly],
+    [['data-zone', 'mid'],   threeOnly],
+    [['data-type', '2PT'],   zoneOnlyThree],
+    [['data-type', '3PT'],   zoneNoThree],
+  ]);
+
+  for (const [[attr, val], disabled] of disableMap) {
+    const btn = document.querySelector(`#filter-panel [${attr}="${val}"]`);
+    if (!btn) continue;
+    btn.classList.toggle('disabled', disabled);
+    btn.setAttribute('aria-disabled', disabled ? 'true' : 'false');
+    if (disabled && btn.classList.contains('active')) {
+      btn.classList.remove('active');
+      btn.setAttribute('aria-pressed', 'false');
+      if (attr === 'data-zone') pendingFilters.zone.delete(val);
+      else                       pendingFilters.type.delete(val);
+    }
+  }
+}
+
 filterPanel.addEventListener('click', (e) => {
   const btn = e.target.closest('.pill-btn');
   if (!btn) return;
+  if (btn.classList.contains('disabled')) return;
   const group = btn.parentElement.dataset.filterGroup;
   if (!group) return;
 
   const isActive = btn.classList.toggle('active');
+  btn.setAttribute('aria-pressed', isActive ? 'true' : 'false');
   if (group === 'result') {
     const key = btn.dataset.result;
     if (isActive) pendingFilters.result.add(key); else pendingFilters.result.delete(key);
@@ -2442,6 +3197,7 @@ filterPanel.addEventListener('click', (e) => {
     const key = parseInt(btn.dataset.period, 10);
     if (isActive) pendingFilters.period.add(key); else pendingFilters.period.delete(key);
   }
+  updateConflictingPills();
   updateApplyState();
 });
 
@@ -2486,7 +3242,11 @@ function refreshFilterSummary() {
     if (filters.result.size < 2) labels.push([...filters.result].join('+'));
     if (filters.type.size < 2)   labels.push([...filters.type].join('+'));
     if (filters.zone.size < 3)   labels.push([...filters.zone].join('+'));
-    if (filters.period.size < 5) labels.push(`Q${[...filters.period].sort().join(',')}`);
+    if (filters.period.size < 5) {
+      const qs = [...filters.period].sort((a, b) => a - b)
+        .map(p => p === 5 ? 'OT' : `Q${p}`);
+      labels.push(qs.join('+'));
+    }
     summary.textContent = labels.length ? labels.join(' · ') : 'Custom';
   }
   const activeDims = totalDims - allFull;
@@ -2494,7 +3254,7 @@ function refreshFilterSummary() {
   count.classList.toggle('warn', empty);
 }
 
-function applyTeamColor(hexColor) {
+function applyTeamColor(hexColor, teamAbbr) {
   const c = new THREE.Color(hexColor);
   MAT_APRON.color.copy(c);
   const hex = '#' + hexColor.toString(16).padStart(6, '0');
@@ -2521,7 +3281,7 @@ function applyTeamColor(hexColor) {
   document.documentElement.style.setProperty('--accent', hex);
   document.documentElement.style.setProperty('--accent-rgb', `${r}, ${g}, ${b}`);
   document.documentElement.style.setProperty('--accent-text', hexText);
-  updateCrowdColors(hexColor);
+  updateCrowdColors(hexColor, getTeamSecondary(teamAbbr, hexColor));
 }
 
 function setPlayerTrigger(player, loading = false) {
@@ -2576,7 +3336,7 @@ function resetFiltersToDefault() {
 
 async function loadPlayer(player) {
   const token = ++playerLoadToken;
-  applyTeamColor(player.color);
+  applyTeamColor(player.color, player.team);
   setPlayerTrigger(player, true);
   setPlayButton('disabled');
   fadeCanvas(true);
@@ -2598,7 +3358,9 @@ async function loadPlayer(player) {
     let cached = shotCache.get(player.id);
     if (!cached) {
       try {
-        const mod = await import(`./data/shots/${player.id}.js`);
+        const shotUrl = new URL(`./data/shots/${player.id}.js`, import.meta.url);
+        shotUrl.searchParams.set('v', DATA_VERSION);
+        const mod = await import(shotUrl.href);
         if (token !== playerLoadToken) return;
         cached = mod[`SHOTS_${player.id}`];
         shotCache.set(player.id, cached);
@@ -2631,6 +3393,103 @@ document.getElementById('chkArena').addEventListener('change', (e) => {
   if (arenaGroup) arenaGroup.visible = e.target.checked;
 });
 
+// ── Shot tooltip ────────────────────────────────────────────────────
+// Click anywhere on the canvas → find the nearest fired & filter-passing
+// shot to the click point on the floor and pop a small details card above
+// its marker. The card follows the marker as the camera moves.
+const tooltipEl     = document.getElementById('shot-tooltip');
+const _shotPickPlane = new THREE.Plane(new THREE.Vector3(0, 1, 0), 0);
+const _shotPickRay   = new THREE.Raycaster();
+const _shotPickNDC   = new THREE.Vector2();
+const _shotPickHit   = new THREE.Vector3();
+const _shotPickProj  = new THREE.Vector3();
+let selectedShotIdx = null;
+let mouseDownPt = null;
+
+function periodLabel(p) { return p >= 5 ? 'OT' : `Q${p}`; }
+
+function fillShotTooltip(idx) {
+  const s = shots[idx];
+  if (!s) return;
+  const r = s.raw || {};
+  const dist = (r.SHOT_DISTANCE != null) ? `${r.SHOT_DISTANCE} ft` : '—';
+  const per  = periodLabel(r.PERIOD || 1);
+  const result = s.made ? 'Made' : 'Missed';
+  const cls    = s.made ? 'tt-made' : 'tt-miss';
+  const action = (r.ACTION_TYPE || 'Field Goal').replace(/\s+/g, ' ').trim();
+  tooltipEl.innerHTML =
+    `<div class="tt-head ${cls}">${result}</div>` +
+    `<div class="tt-meta">${dist} · ${per}</div>` +
+    `<div class="tt-action">${action}</div>`;
+}
+
+function showShotTooltip(idx) {
+  selectedShotIdx = idx;
+  fillShotTooltip(idx);
+  tooltipEl.classList.add('show');
+}
+
+function hideShotTooltip() {
+  selectedShotIdx = null;
+  tooltipEl.classList.remove('show');
+}
+
+// Reproject the selected marker's floor position to screen each frame so the
+// tooltip tracks the camera. If the marker is behind the camera or filtered
+// out, hide.
+function updateShotTooltipPosition() {
+  if (selectedShotIdx === null) return;
+  const s = shots[selectedShotIdx];
+  if (!s || !firedSet.has(selectedShotIdx) || !shotPassesFilters(s)) {
+    hideShotTooltip();
+    return;
+  }
+  _shotPickProj.set(s.floor.x, 0.2, s.floor.z).project(camera);
+  if (_shotPickProj.z > 1 || _shotPickProj.z < -1) { hideShotTooltip(); return; }
+  const x = (_shotPickProj.x * 0.5 + 0.5) * window.innerWidth;
+  const y = (-_shotPickProj.y * 0.5 + 0.5) * window.innerHeight;
+  tooltipEl.style.left = `${x}px`;
+  tooltipEl.style.top  = `${y}px`;
+}
+
+// Distinguish a drag (camera rotate) from a click. Only treat as click when
+// the pointer didn't move more than a few pixels between down and up.
+canvas.addEventListener('pointerdown', (e) => {
+  mouseDownPt = { x: e.clientX, y: e.clientY };
+});
+canvas.addEventListener('pointerup', (e) => {
+  if (!mouseDownPt) return;
+  const dx = e.clientX - mouseDownPt.x;
+  const dy = e.clientY - mouseDownPt.y;
+  mouseDownPt = null;
+  if (Math.hypot(dx, dy) > 4) return; // drag — ignore
+  if (document.getElementById('picker').classList.contains('visible')) return;
+
+  const rect = canvas.getBoundingClientRect();
+  _shotPickNDC.set(
+    ((e.clientX - rect.left) / rect.width) * 2 - 1,
+    -((e.clientY - rect.top) / rect.height) * 2 + 1
+  );
+  _shotPickRay.setFromCamera(_shotPickNDC, camera);
+  if (!_shotPickRay.ray.intersectPlane(_shotPickPlane, _shotPickHit)) {
+    hideShotTooltip();
+    return;
+  }
+  // Pick the closest fired+visible shot within ~0.8 ft of the click point.
+  let bestIdx = -1, bestD2 = 0.8 * 0.8;
+  for (const idx of firedSet) {
+    const s = shots[idx];
+    if (!s || s.heave) continue;
+    if (!shotPassesFilters(s)) continue;
+    const ddx = s.floor.x - _shotPickHit.x;
+    const ddz = s.floor.z - _shotPickHit.z;
+    const d2 = ddx * ddx + ddz * ddz;
+    if (d2 < bestD2) { bestD2 = d2; bestIdx = idx; }
+  }
+  if (bestIdx >= 0) showShotTooltip(bestIdx);
+  else              hideShotTooltip();
+});
+
 window.addEventListener('resize', () => {
   camera.aspect = window.innerWidth / window.innerHeight;
   camera.updateProjectionMatrix();
@@ -2645,11 +3504,47 @@ document.getElementById('player-trigger-sec').addEventListener('click', (e) => {
   showPicker();
 });
 
-// ESC key closes picker (if open)
+// Keyboard shortcuts: Escape closes picker, Space play/pause, R replay, ← / → seek.
 document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape' && !helpPopoverEl.hidden) {
+    closeHelp();
+    return;
+  }
+
+  // Ignore when typing in inputs / textareas / contenteditable.
+  const tgt = e.target;
+  const editable = tgt && (
+    tgt.tagName === 'INPUT' ||
+    tgt.tagName === 'TEXTAREA' ||
+    tgt.tagName === 'SELECT' ||
+    tgt.isContentEditable
+  );
+
   if (e.key === 'Escape' && currentPlayer) {
     const root = document.getElementById('picker');
-    if (root.classList.contains('visible')) picker.hide();
+    if (root.classList.contains('visible')) { picker.hide(); return; }
+    if (selectedShotIdx !== null) { hideShotTooltip(); return; }
+  }
+  if (editable) return;
+
+  // The picker is modal — don't intercept Space / R / arrows while it's open.
+  const pickerOpen = document.getElementById('picker').classList.contains('visible');
+  if (pickerOpen) return;
+
+  if (!currentPlayer || shots.length === 0) return;
+
+  if (e.code === 'Space') {
+    e.preventDefault();
+    document.getElementById('btnPlay').click();
+  } else if (e.key === 'r' || e.key === 'R') {
+    e.preventDefault();
+    document.getElementById('btnReplay').click();
+  } else if (e.key === 'ArrowLeft') {
+    e.preventDefault();
+    seekTo(Math.max(0, currentSeekFraction() - 0.05));
+  } else if (e.key === 'ArrowRight') {
+    e.preventDefault();
+    seekTo(Math.min(1, currentSeekFraction() + 0.05));
   }
 });
 
@@ -2709,10 +3604,29 @@ const picker = (() => {
 
   function teamColor(p) { return '#' + (p.color || 0x445566).toString(16).padStart(6, '0'); }
 
+  function normalizePositionLabel(playerPos) {
+    if (!playerPos) return '';
+    const p = String(playerPos).trim().toUpperCase();
+    if (!p) return '';
+    if (/^[GFC](?:-[GFC])?$/.test(p)) return p;
+
+    const tokens = p.split(/[-/\s]+/).filter(Boolean);
+    const mapped = [];
+    for (const tok of tokens) {
+      let m = '';
+      if (tok.startsWith('GUARD')) m = 'G';
+      else if (tok.startsWith('FORWARD')) m = 'F';
+      else if (tok.startsWith('CENTER') || tok.startsWith('CENTRE')) m = 'C';
+      else if (tok === 'G' || tok === 'F' || tok === 'C') m = tok;
+      if (m && !mapped.includes(m)) mapped.push(m);
+    }
+    return mapped.length ? mapped.join('-') : p;
+  }
+
   function posMatches(playerPos, filter) {
     if (!filter) return true;
-    if (!playerPos) return false;
-    const pp = playerPos.toUpperCase();
+    const pp = normalizePositionLabel(playerPos);
+    if (!pp) return false;
     if (filter === 'G') return pp.includes('G');
     if (filter === 'F') return pp.includes('F');
     if (filter === 'C') return pp.includes('C');
@@ -2812,7 +3726,9 @@ const picker = (() => {
       abbr.textContent = p.team || '—';
       const posTag = document.createElement('span');
       posTag.className = 'pp-pos-tag';
-      posTag.textContent = `${p.position || ''} ${p.height_in ? inchesToText(p.height_in) : ''}`.trim();
+      const posText = normalizePositionLabel(p.position) || 'No position';
+      const heightText = p.height_in ? inchesToText(p.height_in) : 'No height';
+      posTag.textContent = `${posText} | ${heightText}`;
       teamRow.append(dot, abbr, posTag);
 
       const name = document.createElement('div');
@@ -2925,6 +3841,7 @@ try {
   setPlayButton('disabled');
   // Welcome screen first — user picks a player.
   picker.show();
+  showHelpTip();
   requestAnimationFrame(() => {
     requestAnimationFrame(() => {
       try {
