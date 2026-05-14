@@ -19,9 +19,10 @@
 - **Player picker** - roster search, team/position/height/stat filters, and sorting
 - **Team colors** - apron, crowd, and UI theme per player
 - **Speed** - 0.5x to 10x
-- **Progress** - scrub through the filtered shot sequence
+- **Progress** - scrub through the filtered shot sequence (mouse drag on desktop, touch drag on mobile)
 - **Arena toggle** - show or hide the surrounding arena
 - **Camera** - preset views (broadcast/sideline/top), auto camera pan mode, and free orbit controls (zoom + right-drag pan)
+- **Mobile responsive** - portrait stacks HUD vertically; landscape collapses to a single-row HUD (player / filter / speed / camera) with a compact centered stats card
 
 ## Running locally
 
