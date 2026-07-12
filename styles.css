@@ -1299,13 +1299,15 @@
     }
 
     /* ── Entrance animations ───────────────────────────────────────
-       HUD cards slide in from their screen edge with a subtle settle.
-       Real transform (not opacity-only) so the cards feel like they
-       arrive from off-canvas; quint ease-out gives the responsive
-       "jump then settle" motion. GPU-only props (transform/opacity). */
+       Left/right HUD cards slide in from their screen edge with a subtle
+       settle (quint ease-out gives the responsive "jump then settle").
+       fadeInUp is intentionally opacity-only: it drives #stats, which is
+       centered with `transform: translateX(-50%)` on desktop — a movement
+       transform in the keyframe (fill: both) would clobber that centering
+       and shift the scoreboard off-center. GPU-only props throughout. */
     @keyframes fadeInLeft  { from { opacity: 0; transform: translateX(-16px); } to { opacity: 1; transform: translateX(0); } }
     @keyframes fadeInRight { from { opacity: 0; transform: translateX(16px);  } to { opacity: 1; transform: translateX(0); } }
-    @keyframes fadeInUp    { from { opacity: 0; transform: translateY(14px) scale(0.98); } to { opacity: 1; transform: translateY(0) scale(1); } }
+    @keyframes fadeInUp    { from { opacity: 0; } to { opacity: 1; } }
 
     .anim-left  { animation: fadeInLeft  var(--dur-slower) var(--ease-out-quint) 0.05s both; }
     .anim-right { animation: fadeInRight var(--dur-slower) var(--ease-out-quint) 0.10s both; }
