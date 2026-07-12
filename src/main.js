@@ -1227,7 +1227,7 @@ const picker = (() => {
     rows.forEach((p, i) => {
       const card = document.createElement('div');
       card.className = 'pp-card' + (p.hasData ? '' : ' no-data');
-      card.style.animationDelay = Math.min(i, 16) * 12 + 'ms';
+      card.style.animationDelay = Math.min(i, 22) * 20 + 'ms';
       const fgPctText = p.fg_pct ? (p.fg_pct * 100).toFixed(1) + '%' : '—';
 
       const teamRow = document.createElement('div');

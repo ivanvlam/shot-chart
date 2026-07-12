@@ -11,13 +11,38 @@
       --card-highlight: rgba(255, 255, 255, 0.05);
       --card-shadow: 0 10px 40px rgba(0, 0, 0, 0.55), 0 1px 0 var(--card-highlight) inset, 0 0 0 1px rgba(255, 255, 255, 0.025) inset;
       --card-radius: 12px;
-      --lbl: rgba(255, 255, 255, 0.40);
+      --lbl: rgba(255, 255, 255, 0.52);
       --text: #e8eaf2;
       --text-dim: rgba(255, 255, 255, 0.55);
       --made: #3ddc6a;
       --miss: #e04444;
       --made-rgb: 61, 220, 106;
       --miss-rgb: 224, 68, 68;
+
+      /* ── Motion system ─────────────────────────────────────────────
+         Named easing curves (Emil Kowalski's set) + a duration scale so
+         every transition reads from one vocabulary instead of ad-hoc values.
+         ease-out for enter/exit, ease-in-out for on-screen movement,
+         ease-out-back for tactile press/settle, ease-drawer for panels. */
+      --ease-out-quint: cubic-bezier(0.23, 1, 0.32, 1);
+      --ease-out-quart: cubic-bezier(0.165, 0.84, 0.44, 1);
+      --ease-out-back: cubic-bezier(0.34, 1.4, 0.64, 1);
+      --ease-in-out-quart: cubic-bezier(0.77, 0, 0.175, 1);
+      --ease-drawer: cubic-bezier(0.32, 0.72, 0, 1);
+      --dur-fast: 120ms;   /* micro-interactions: press, hover color */
+      --dur-base: 200ms;   /* standard UI: pills, triggers, tooltips */
+      --dur-slow: 320ms;   /* panels, picker card, larger surfaces */
+      --dur-slower: 420ms;  /* first-run entrances */
+
+      /* ── Typography scale ──────────────────────────────────────────
+         Tokens seeded at the current values so the system is centralized
+         without shifting any layout; overrides in media queries still win. */
+      --fs-eyebrow: 9.5px;
+      --fs-label: 11px;
+      --fs-body: 13px;
+      --fs-title: 17px;
+      --tracking-eyebrow: 0.22em;
+      --tracking-label: 0.18em;
     }
 
     * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -142,10 +167,10 @@
       cursor: pointer;
       white-space: nowrap;
       box-shadow: 0 4px 14px rgba(var(--accent-rgb), 0.35), 0 1px 0 rgba(255,255,255,0.18) inset;
-      transition: transform 0.12s ease, box-shadow 0.15s ease, filter 0.15s ease;
+      transition: transform var(--dur-fast) var(--ease-out-back), box-shadow var(--dur-base) var(--ease-out-quint), filter var(--dur-base) ease;
     }
     #btnPlay:hover  { filter: brightness(1.10); box-shadow: 0 6px 20px rgba(var(--accent-rgb), 0.5), 0 1px 0 rgba(255,255,255,0.2) inset; }
-    #btnPlay:active { transform: translateY(1px); }
+    #btnPlay:active { transform: scale(0.96); }
     #btnPlay:disabled { opacity: 0.5; cursor: not-allowed; }
 
     .icon-btn {
@@ -162,10 +187,10 @@
       place-items: center;
       cursor: pointer;
       padding: 0;
-      transition: background 0.15s, color 0.15s, border-color 0.15s;
+      transition: background var(--dur-fast) ease, color var(--dur-fast) ease, border-color var(--dur-fast) ease, transform var(--dur-fast) var(--ease-out-back);
     }
     .icon-btn:hover  { background: rgba(255,255,255,0.08); border-color: rgba(255,255,255,0.16); color: #fff; }
-    .icon-btn:active { background: rgba(255,255,255,0.03); }
+    .icon-btn:active { background: rgba(255,255,255,0.03); transform: scale(0.92); }
 
     /* ── Right card ─────────────────────────────────────────────── */
     #ctrl-right { right: 18px; }
@@ -282,7 +307,7 @@
       padding: 6px 12px;
       border-radius: 7px;
       cursor: pointer;
-      transition: background 0.15s, border-color 0.15s, color 0.15s, box-shadow 0.15s, transform 0.10s;
+      transition: background var(--dur-fast) ease, border-color var(--dur-fast) ease, color var(--dur-fast) ease, box-shadow var(--dur-base) var(--ease-out-quint), transform var(--dur-fast) var(--ease-out-back);
       white-space: nowrap;
       line-height: 1;
     }
@@ -291,7 +316,7 @@
       color: rgba(255,255,255,0.78);
       border-color: rgba(255,255,255,0.16);
     }
-    .pill-btn:active { transform: translateY(1px); }
+    .pill-btn:active { transform: scale(0.94); }
     .pill-btn.active {
       background: rgba(var(--accent-rgb), 0.22);
       border-color: rgba(var(--accent-rgb), 0.70);
@@ -372,7 +397,7 @@
       border-radius: 99px;
       background: rgba(255,255,255,0.08);
       border: 1px solid rgba(255,255,255,0.10);
-      transition: background 0.2s, border-color 0.2s;
+      transition: background var(--dur-base) ease, border-color var(--dur-base) ease;
       cursor: pointer;
     }
     .toggle-track::after {
@@ -384,7 +409,7 @@
       background: rgba(255,255,255,0.40);
       top: 2px;
       left: 2px;
-      transition: transform 0.2s, background 0.2s;
+      transition: transform var(--dur-base) var(--ease-out-back), background var(--dur-base) ease;
     }
     .toggle-sw input:checked + .toggle-track {
       background: rgba(var(--accent-rgb), 0.55);
@@ -410,13 +435,14 @@
       padding: 18px;
       z-index: 9;
       opacity: 0;
-      transform: translateY(-6px);
+      transform: translateY(-8px) scale(0.98);
+      transform-origin: top right;
       pointer-events: none;
-      transition: opacity 0.18s ease, transform 0.18s ease;
+      transition: opacity var(--dur-base) var(--ease-drawer), transform var(--dur-base) var(--ease-drawer);
     }
     #filter-panel.open {
       opacity: 1;
-      transform: translateY(0);
+      transform: translateY(0) scale(1);
       pointer-events: auto;
     }
     .filter-row {
@@ -482,8 +508,10 @@
       padding: 9px 14px;
       border-radius: 7px;
       cursor: pointer;
-      transition: background 0.15s, border-color 0.15s, color 0.15s, opacity 0.15s, box-shadow 0.15s;
+      transition: background var(--dur-fast) ease, border-color var(--dur-fast) ease, color var(--dur-fast) ease, opacity var(--dur-fast) ease, box-shadow var(--dur-base) var(--ease-out-quint), transform var(--dur-fast) var(--ease-out-back);
     }
+    .fp-action:active { transform: scale(0.97); }
+    .fp-action:disabled:active { transform: none; }
     .fp-action-ghost {
       flex: 0 0 auto;
       background: transparent;
@@ -537,7 +565,7 @@
       -webkit-backdrop-filter: blur(14px) saturate(1.3);
       opacity: 0;
       pointer-events: none;
-      transition: opacity 0.35s ease;
+      transition: opacity var(--dur-slow) var(--ease-out-quint);
     }
     #picker.visible {
       opacity: 1;
@@ -546,7 +574,7 @@
     #picker.hidden { display: none; }
     #picker-card {
       transform: scale(0.97);
-      transition: transform 0.35s ease;
+      transition: transform var(--dur-slow) var(--ease-out-quint);
     }
     #picker.visible #picker-card { transform: scale(1); }
 
@@ -560,9 +588,9 @@
       display: flex;
       flex-direction: column;
       overflow: hidden;
-      transition: transform 0.35s ease;
+      transition: transform var(--dur-slow) var(--ease-out-quint);
     }
-    #picker-results { transition: opacity 0.18s ease; }
+    #picker-results { transition: opacity var(--dur-base) var(--ease-out-quint); }
     #picker-results.fading { opacity: 0; }
     #picker-header {
       padding: 22px 28px 14px;
@@ -721,27 +749,31 @@
       border-radius: 10px;
       padding: 13px 14px;
       cursor: pointer;
-      transition: background 0.15s, border-color 0.15s, transform 0.1s;
+      transition: background var(--dur-fast) ease, border-color var(--dur-fast) ease, transform var(--dur-fast) var(--ease-out-back);
       position: relative;
       display: flex;
       flex-direction: column;
       gap: 5px;
-      animation: ppCardIn 0.20s ease-out both;
+      /* Entrance cascades in: per-card animation-delay is set inline in
+         main.js so the grid ripples on open/filter instead of popping. */
+      animation: ppCardIn var(--dur-slow) var(--ease-out-quint) both;
     }
     @keyframes ppCardIn {
-      from { opacity: 0; transform: translateY(4px); }
-      to   { opacity: 1; transform: translateY(0); }
+      from { opacity: 0; transform: translateY(10px) scale(0.97); }
+      to   { opacity: 1; transform: translateY(0) scale(1); }
     }
     .pp-card:hover {
       background: rgba(255,255,255,0.05);
       border-color: rgba(255,255,255,0.14);
-      transform: translateY(-1px);
+      transform: translateY(-2px);
     }
+    .pp-card:active { transform: translateY(0) scale(0.98); }
     .pp-card.no-data {
       opacity: 0.40;
       cursor: not-allowed;
     }
     .pp-card.no-data:hover { transform: none; }
+    .pp-card.no-data:active { transform: none; }
 
     .pp-card-team-row {
       display: flex;
@@ -1067,7 +1099,8 @@
       opacity: 0;
       pointer-events: none;
       transform: translateY(8px) scale(0.98);
-      transition: opacity 0.16s ease, transform 0.16s ease;
+      transform-origin: bottom right;
+      transition: opacity var(--dur-base) var(--ease-drawer), transform var(--dur-base) var(--ease-drawer);
     }
     #help-popover.open,
     #help-tip.show {
@@ -1238,25 +1271,47 @@
       opacity: 0;
       pointer-events: none;
       z-index: 5;
-      transition: opacity 0.2s ease;
+      transition: opacity var(--dur-slow) var(--ease-in-out-quart);
     }
     #transition-overlay.show { opacity: 0.45; }
 
-    /* Loading pulse on player trigger */
-    @keyframes shimmerPulse {
-      0%, 100% { opacity: 0.6; }
-      50% { opacity: 1; }
+    /* Loading state on player trigger — a highlight sweeps across the name
+       (skeleton-style) instead of a flat opacity pulse, reading as active work. */
+    @keyframes shimmerSweep {
+      from { background-position: 200% 0; }
+      to   { background-position: -200% 0; }
     }
-    .player-trigger.loading .player-trigger-name { animation: shimmerPulse 1.0s ease-in-out infinite; }
+    .player-trigger.loading .player-trigger-name {
+      background: linear-gradient(
+        100deg,
+        rgba(255,255,255,0.35) 0%,
+        rgba(255,255,255,0.35) 35%,
+        #fff 50%,
+        rgba(255,255,255,0.35) 65%,
+        rgba(255,255,255,0.35) 100%
+      );
+      background-size: 200% 100%;
+      -webkit-background-clip: text;
+      background-clip: text;
+      -webkit-text-fill-color: transparent;
+      color: transparent;
+      animation: shimmerSweep 1.4s linear infinite;
+    }
 
-    /* ── Entrance animations ─────────────────────────────────────── */
-    @keyframes fadeInLeft  { from { opacity: 0; } to { opacity: 1; } }
-    @keyframes fadeInRight { from { opacity: 0; } to { opacity: 1; } }
+    /* ── Entrance animations ───────────────────────────────────────
+       Left/right HUD cards slide in from their screen edge with a subtle
+       settle (quint ease-out gives the responsive "jump then settle").
+       fadeInUp is intentionally opacity-only: it drives #stats, which is
+       centered with `transform: translateX(-50%)` on desktop — a movement
+       transform in the keyframe (fill: both) would clobber that centering
+       and shift the scoreboard off-center. GPU-only props throughout. */
+    @keyframes fadeInLeft  { from { opacity: 0; transform: translateX(-16px); } to { opacity: 1; transform: translateX(0); } }
+    @keyframes fadeInRight { from { opacity: 0; transform: translateX(16px);  } to { opacity: 1; transform: translateX(0); } }
     @keyframes fadeInUp    { from { opacity: 0; } to { opacity: 1; } }
 
-    .anim-left  { animation: fadeInLeft  0.4s ease-out 0.05s both; }
-    .anim-right { animation: fadeInRight 0.4s ease-out 0.10s both; }
-    .anim-up    { animation: fadeInUp    0.4s ease-out 0.15s both; }
+    .anim-left  { animation: fadeInLeft  var(--dur-slower) var(--ease-out-quint) 0.05s both; }
+    .anim-right { animation: fadeInRight var(--dur-slower) var(--ease-out-quint) 0.10s both; }
+    .anim-up    { animation: fadeInUp    var(--dur-slower) var(--ease-out-quint) 0.15s both; }
 
     /* Compact native dropdown used in place of the speed/camera pill rows
        when the right HUD doesn't have room. Visible only via media queries. */
@@ -1656,4 +1711,47 @@
       #help-popover.open {
         transform: translateY(-50%) scale(1);
       }
+    }
+
+    /* ── Focus visibility ──────────────────────────────────────────
+       One consistent keyboard-focus ring across every interactive
+       control (was previously only on the help bubble). Mouse users
+       are unaffected thanks to :focus-visible. */
+    .pill-btn:focus-visible,
+    #btnPlay:focus-visible,
+    .icon-btn:focus-visible,
+    .fp-action:focus-visible,
+    .player-trigger:focus-visible,
+    .filter-trigger:focus-visible,
+    .cfg-sec.clickable:focus-visible,
+    .pp-card:focus-visible,
+    #picker-repo-link:focus-visible,
+    #picker-filters-toggle:focus-visible,
+    .help-close:focus-visible,
+    .toggle-sw input:focus-visible + .toggle-track {
+      outline: 2px solid rgba(var(--accent-rgb), 0.75);
+      outline-offset: 2px;
+    }
+
+    /* ── Reduced motion ────────────────────────────────────────────
+       Respect prefers-reduced-motion: collapse every transition and
+       animation to a near-instant, transform-free crossfade. Kept last
+       so it overrides all rules above. No !important (per guidance). */
+    @media (prefers-reduced-motion: reduce) {
+      *,
+      *::before,
+      *::after {
+        animation-duration: 0.01ms;
+        animation-iteration-count: 1;
+        transition-duration: 0.01ms;
+        scroll-behavior: auto;
+      }
+      /* Neutralize entrance transforms so nothing starts off-position. */
+      .anim-left, .anim-right, .anim-up, .pp-card {
+        animation: fadeInPlain 0.01ms both;
+      }
+      @keyframes fadeInPlain { from { opacity: 0; } to { opacity: 1; } }
+      /* Hover lifts and the loading shimmer are motion too — remove them. */
+      .pp-card:hover, #help-bubble:hover { transform: none; }
+      .player-trigger.loading .player-trigger-name { animation: none; }
     }
